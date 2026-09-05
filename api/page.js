@@ -45,24 +45,10 @@ function shell(targetUrl) {
     html,body{width:100%;height:100%;margin:0;background:#f6f8f8;overflow:hidden}
     body{font-family:Inter,Arial,sans-serif}
     #app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#f6f8f8;display:block}
-    #loading{position:fixed;inset:0;display:grid;place-items:center;background:#f6f8f8;color:#063667;z-index:2;transition:opacity .2s ease}
-    #loading.hide{opacity:0;pointer-events:none}
-    .box{text-align:center;padding:24px}.mark{width:46px;height:46px;border:4px solid rgba(6,54,103,.14);border-top-color:#063667;border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}.txt{font-weight:800;font-size:14px}.sub{font-size:12px;color:#6a7680;margin-top:6px}
-    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
-  <div id="loading"><div class="box"><div class="mark"></div><div class="txt">Carregando a Loja Digital do Grêmio</div><div class="sub">Nova Camisa Oficial</div></div></div>
   <iframe id="app" src="${src}" title="Loja Digital do Grêmio" allow="payment *; clipboard-write" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-  <script>
-    (function(){
-      var frame=document.getElementById('app');
-      var loading=document.getElementById('loading');
-      var done=function(){loading.classList.add('hide');setTimeout(function(){loading.remove()},260)};
-      frame.addEventListener('load',done,{once:true});
-      setTimeout(done,12000);
-    })();
-  </script>
 </body>
 </html>`;
 }
