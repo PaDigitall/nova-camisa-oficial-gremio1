@@ -1,0 +1,79 @@
+name: Deploy Apps Script
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps-script/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apps-script-production
+  cancel-in-progress: false
+
+env:
+  APPS_SCRIPT_DEPLOYMENT_ID: AKfycbyJnfhx5RS1gFnpPnFV9e2PdhQpq1gqoDXo4rOFVyHMjZ0PqisUAEWAyPUPBRNOH0pf
+
+jobs:
+  deploy:
+    name: Publicar no Apps Script oficial
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Restaurar credencial do clasp
+        shell: bash
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CLASPRC_JSON:-}" ]; then
+            echo "Secret CLASPRC_JSON não configurado."
+            exit 1
+          fi
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Validar arquivos do projeto
+        working-directory: apps-script
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .clasp.json
+          test -f appsscript.json
+          npx --yes @google/clasp@3 show-file-status
+
+      - name: Enviar código ao Apps Script
+        working-directory: apps-script
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @google/clasp@3 push --force
+
+      - name: Atualizar a implantação existente
+        working-directory: apps-script
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @google/clasp@3 create-deployment \
+            --deploymentId "$APPS_SCRIPT_DEPLOYMENT_ID" \
+            --description "GitHub ${GITHUB_SHA::7}"
+
+      - name: Resumo
+        run: |
+          echo "### Apps Script publicado" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: \`${GITHUB_SHA::7}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Script ID: \`1WzyK0YkQidg6A2RsYFOmS9pLl0DQ8_K4DDzfQQJJzuHNs3drJT4LGIMb\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Implantação atualizada sem trocar a URL do Web App." >> "$GITHUB_STEP_SUMMARY"
