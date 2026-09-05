@@ -525,6 +525,37 @@
       display:flex;align-items:center;justify-content:space-between;gap:14px;
       margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--line);
     }
+    .adminNav{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+      padding:6px;margin:0 0 20px;border:1px solid var(--line);border-radius:16px;background:#f4f7f8;
+    }
+    .adminNavBtn{
+      min-height:44px;border:0;border-radius:12px;background:transparent;color:var(--muted);
+      font:inherit;font-size:12px;font-weight:900;cursor:pointer;padding:9px 11px;transition:.18s ease;
+    }
+    .adminNavBtn:hover{background:#fff;color:var(--navy)}
+    .adminNavBtn.active{background:#fff;color:var(--navy);box-shadow:0 5px 16px rgba(6,54,103,.09)}
+    .adminSection{animation:modalFade .18s ease both}
+    .adminSectionHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:0 0 14px}
+    .adminSectionHeader h3{margin:0;color:var(--navy);font-size:19px}
+    .adminSectionHeader p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
+    .adminQuickGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px}
+    .adminQuickCard{border:1px solid var(--line);border-radius:17px;background:#fff;padding:16px;text-align:left;cursor:pointer;transition:.18s ease}
+    .adminQuickCard:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(6,54,103,.08);border-color:#cbd7df}
+    .adminQuickCard strong{display:block;color:var(--navy);font-size:14px;margin-bottom:5px}
+    .adminQuickCard span{display:block;color:var(--muted);font-size:11px;line-height:1.45}
+    .modelAdminGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .modelAdminCard{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
+    .modelPreview{aspect-ratio:4/5;background:linear-gradient(145deg,#f5f7f8,#edf2f3);display:grid;place-items:center;overflow:hidden;position:relative}
+    .modelPreview img{width:100%;height:100%;object-fit:contain;display:block}
+    .modelPreviewPlaceholder{padding:22px;text-align:center;color:var(--muted);font-size:12px;line-height:1.5}
+    .modelAdminBody{padding:14px}
+    .modelAdminTitle{font-size:14px;font-weight:950;color:var(--navy);margin-bottom:9px}
+    .modelAdminStatus{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;background:#eef4f7;color:#5b6973;margin-bottom:10px}
+    .modelAdminStatus.ok{background:#edf8ea;color:#357321}
+    .modelAdminBody input{font-size:12px}
+    .modelAdminHelp{font-size:10px;color:var(--muted);line-height:1.4;margin-top:6px}
+    .adminSaveBar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:13px 14px;border-radius:15px;background:#f7fafb;border:1px solid var(--line)}
     .statsGrid{
       display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 20px;
     }
@@ -596,6 +627,8 @@
     }
 
     @media(max-width:900px){
+      .adminQuickGrid{grid-template-columns:1fr 1fr 1fr}
+      .modelAdminGrid{grid-template-columns:1fr 1fr}
       .adminFilters{grid-template-columns:1fr 1fr}
       .filterSearch{grid-column:1/-1}
       .adminOrder{grid-template-columns:1fr 1fr}
@@ -603,6 +636,9 @@
       .statsGrid{grid-template-columns:repeat(2,1fr)}
     }
     @media(max-width:720px){
+      .adminNav{grid-template-columns:1fr 1fr}
+      .adminQuickGrid,.modelAdminGrid{grid-template-columns:1fr}
+      .adminSaveBar{align-items:stretch;flex-direction:column}
       .adminSettingsGrid{grid-template-columns:1fr}
       .adminFilters{grid-template-columns:1fr}
       .filterSearch{grid-column:auto}
@@ -1552,107 +1588,107 @@
             <button id="adminLogoutBtn" type="button" class="btn ghostBtn smallBtn">SAIR</button>
           </div>
 
-          <div class="statsGrid">
-            <div class="statCard"><span>Pedidos</span><strong id="statTotal">0</strong></div>
-            <div class="statCard"><span>Pagos</span><strong id="statPaid">0</strong></div>
-            <div class="statCard"><span>Aguardando</span><strong id="statWaiting">0</strong></div>
-            <div class="statCard"><span>Em produção</span><strong id="statProduction">0</strong></div>
-            <div class="statCard"><span>Prontos</span><strong id="statReady">0</strong></div>
-            <div class="statCard"><span>Entregues</span><strong id="statDelivered">0</strong></div>
-            <div class="statCard wide"><span>Receita de pedidos pagos</span><strong id="statRevenue">R$ 0,00</strong></div>
+          <div class="adminNav" role="tablist" aria-label="Navegação da Área do Grêmio">
+            <button class="adminNavBtn active" type="button" data-admin-tab="overview">VISÃO GERAL</button>
+            <button class="adminNavBtn" type="button" data-admin-tab="orders">PEDIDOS</button>
+            <button class="adminNavBtn" type="button" data-admin-tab="models">MODELOS</button>
+            <button class="adminNavBtn" type="button" data-admin-tab="settings">CONFIGURAÇÕES</button>
           </div>
 
-          <details class="adminDetails">
-            <summary>⚙️ Configurações de vendas e notificações</summary>
-            <div class="adminSettingsGrid">
-              <div>
-                <label>Vendas estudantes</label>
-                <select id="admSalesStudents">
-                  <option>ABERTAS</option><option>FECHADAS</option>
-                </select>
-              </div>
-              <div>
-                <label>Vendas servidores</label>
-                <select id="admSalesServers">
-                  <option>ABERTAS</option><option>FECHADAS</option>
-                </select>
-              </div>
-              <div>
-                <label>Lote atual estudantes</label>
-                <input id="admLotStudents">
-              </div>
-              <div>
-                <label>Lote atual servidores</label>
-                <input id="admLotServers">
-              </div>
-              <div>
-                <label>Prazo padrão após envio à gráfica (dias)</label>
-                <input id="admDefaultDays" type="number" min="1" max="120">
-              </div>
-              <div class="switchStack">
-                <label class="miniCheck"><input id="admAutoEmail" type="checkbox"> E-mails automáticos do sistema</label>
-                <label class="miniCheck"><input id="admAsaasNotify" type="checkbox"> Notificações de cobrança do Asaas</label>
-                <label class="miniCheck"><input id="admSms" type="checkbox"> SMS do Asaas</label>
-                <label class="miniCheck"><input id="admWaAsaas" type="checkbox"> WhatsApp do Asaas</label>
-              </div>
-              <div class="full">
-                <button id="adminSaveSettingsBtn" type="button" class="btn secondary">SALVAR CONFIGURAÇÕES</button>
-                <div class="muted" style="margin-top:8px">SMS e WhatsApp do Asaas podem gerar tarifas por envio.</div>
-              </div>
+          <section id="adminTabOverview" class="adminSection" data-admin-section="overview">
+            <div class="adminSectionHeader">
+              <div><h3>Visão geral</h3><p>Resumo rápido da operação da loja e da produção.</p></div>
+              <button id="admOverviewRefresh" type="button" class="btn secondary smallBtn">ATUALIZAR</button>
             </div>
-          </details>
+            <div class="statsGrid">
+              <div class="statCard"><span>Pedidos</span><strong id="statTotal">0</strong></div>
+              <div class="statCard"><span>Pagos</span><strong id="statPaid">0</strong></div>
+              <div class="statCard"><span>Aguardando</span><strong id="statWaiting">0</strong></div>
+              <div class="statCard"><span>Em produção</span><strong id="statProduction">0</strong></div>
+              <div class="statCard"><span>Prontos</span><strong id="statReady">0</strong></div>
+              <div class="statCard"><span>Entregues</span><strong id="statDelivered">0</strong></div>
+              <div class="statCard wide"><span>Receita de pedidos pagos</span><strong id="statRevenue">R$ 0,00</strong></div>
+            </div>
+            <div class="adminQuickGrid">
+              <button class="adminQuickCard" type="button" data-admin-go="orders"><strong>📦 Gerenciar pedidos</strong><span>Filtre, acompanhe produção, retirada e comunicação com cada comprador.</span></button>
+              <button class="adminQuickCard" type="button" data-admin-go="models"><strong>👕 Atualizar modelos</strong><span>Troque as imagens das camisas sem editar código ou depender da planilha.</span></button>
+              <button class="adminQuickCard" type="button" data-admin-go="settings"><strong>⚙️ Configurar vendas</strong><span>Abra ou feche lotes, ajuste prazos e notificações do sistema.</span></button>
+            </div>
+          </section>
 
-          <div class="adminFilters">
-            <div class="filterSearch">
-              <label>Buscar</label>
-              <input id="admSearch" placeholder="Pedido, nome, turma, WhatsApp, modelo...">
+          <section id="adminTabOrders" class="adminSection hidden" data-admin-section="orders">
+            <div class="adminSectionHeader">
+              <div><h3>Pedidos</h3><p>Busca e gestão operacional das encomendas.</p></div>
             </div>
-            <div>
-              <label>Público</label>
-              <select id="admFilterPublic">
-                <option value="">Todos</option>
-                <option value="ESTUDANTE">Estudantes</option>
-                <option value="SERVIDOR">Servidores</option>
-              </select>
+            <div class="adminFilters">
+              <div class="filterSearch">
+                <label>Buscar</label>
+                <input id="admSearch" placeholder="Pedido, nome, turma, WhatsApp, modelo...">
+              </div>
+              <div>
+                <label>Público</label>
+                <select id="admFilterPublic"><option value="">Todos</option><option value="ESTUDANTE">Estudantes</option><option value="SERVIDOR">Servidores</option></select>
+              </div>
+              <div>
+                <label>Pagamento</label>
+                <select id="admFilterPayment"><option value="">Todos</option><option>AGUARDANDO PAGAMENTO</option><option>EM ANÁLISE</option><option>CONFIRMADO</option><option>PAGO</option><option>VENCIDO</option><option>ESTORNADO</option><option>CONTESTADO</option><option>CANCELADO</option></select>
+              </div>
+              <div>
+                <label>Produção</label>
+                <select id="admFilterProduction"><option value="">Todos</option><option>NÃO ENVIADO</option><option>ENVIADO À GRÁFICA</option><option>EM PRODUÇÃO</option><option>PRONTO</option></select>
+              </div>
+              <div>
+                <label>Entrega</label>
+                <select id="admFilterDelivery"><option value="">Todos</option><option>NÃO ENTREGUE</option><option>DISPONÍVEL PARA RETIRADA</option><option>ENTREGUE</option></select>
+              </div>
+              <button id="admRefreshBtn" type="button" class="btn secondary smallBtn">ATUALIZAR</button>
             </div>
-            <div>
-              <label>Pagamento</label>
-              <select id="admFilterPayment">
-                <option value="">Todos</option>
-                <option>AGUARDANDO PAGAMENTO</option>
-                <option>EM ANÁLISE</option>
-                <option>CONFIRMADO</option>
-                <option>PAGO</option>
-                <option>VENCIDO</option>
-                <option>ESTORNADO</option>
-                <option>CONTESTADO</option>
-                <option>CANCELADO</option>
-              </select>
-            </div>
-            <div>
-              <label>Produção</label>
-              <select id="admFilterProduction">
-                <option value="">Todos</option>
-                <option>NÃO ENVIADO</option>
-                <option>ENVIADO À GRÁFICA</option>
-                <option>EM PRODUÇÃO</option>
-                <option>PRONTO</option>
-              </select>
-            </div>
-            <div>
-              <label>Entrega</label>
-              <select id="admFilterDelivery">
-                <option value="">Todos</option>
-                <option>NÃO ENTREGUE</option>
-                <option>DISPONÍVEL PARA RETIRADA</option>
-                <option>ENTREGUE</option>
-              </select>
-            </div>
-            <button id="admRefreshBtn" type="button" class="btn secondary smallBtn">ATUALIZAR</button>
-          </div>
+            <div id="adminOrdersMeta" class="muted" style="margin:14px 0 9px"></div>
+            <div id="adminOrdersList" class="adminOrders"></div>
+          </section>
 
-          <div id="adminOrdersMeta" class="muted" style="margin:14px 0 9px"></div>
-          <div id="adminOrdersList" class="adminOrders"></div>
+          <section id="adminTabModels" class="adminSection hidden" data-admin-section="models">
+            <div class="adminSectionHeader">
+              <div><h3>Modelos da camisa</h3><p>Atualize as imagens exibidas em “Modelos”. Aceita o ID do arquivo ou o link do Google Drive.</p></div>
+            </div>
+            <div class="notice blue" style="margin-bottom:14px"><strong>Como usar:</strong> envie a imagem ao Google Drive e cole abaixo o link ou ID do arquivo. O sistema valida a imagem antes de publicar.</div>
+            <div id="adminModelsFeedback" class="muted" style="margin-bottom:10px"></div>
+            <div class="modelAdminGrid">
+              <div class="modelAdminCard">
+                <div class="modelPreview"><img id="admMockStudentImg" class="hidden" alt="Prévia do modelo estudantes"><div id="admMockStudentEmpty" class="modelPreviewPlaceholder">Nenhuma imagem publicada</div></div>
+                <div class="modelAdminBody"><div class="modelAdminTitle">Estudantes — Gola Polo</div><span id="admMockStudentStatus" class="modelAdminStatus">SEM IMAGEM</span><label>Link ou ID do Google Drive</label><input id="admMockStudent" placeholder="Cole aqui o link ou ID"><div class="modelAdminHelp">Frente/verso podem estar na mesma arte.</div></div>
+              </div>
+              <div class="modelAdminCard">
+                <div class="modelPreview"><img id="admMockServerPoloImg" class="hidden" alt="Prévia do modelo profissionais gola polo"><div id="admMockServerPoloEmpty" class="modelPreviewPlaceholder">Nenhuma imagem publicada</div></div>
+                <div class="modelAdminBody"><div class="modelAdminTitle">Profissionais — Gola Polo</div><span id="admMockServerPoloStatus" class="modelAdminStatus">SEM IMAGEM</span><label>Link ou ID do Google Drive</label><input id="admMockServerPolo" placeholder="Cole aqui o link ou ID"><div class="modelAdminHelp">Use uma imagem PNG ou JPG.</div></div>
+              </div>
+              <div class="modelAdminCard">
+                <div class="modelPreview"><img id="admMockServerCarecaImg" class="hidden" alt="Prévia do modelo profissionais gola careca"><div id="admMockServerCarecaEmpty" class="modelPreviewPlaceholder">Nenhuma imagem publicada</div></div>
+                <div class="modelAdminBody"><div class="modelAdminTitle">Profissionais — Gola Careca</div><span id="admMockServerCarecaStatus" class="modelAdminStatus">SEM IMAGEM</span><label>Link ou ID do Google Drive</label><input id="admMockServerCareca" placeholder="Cole aqui o link ou ID"><div class="modelAdminHelp">Deixe vazio para remover a imagem publicada.</div></div>
+              </div>
+            </div>
+            <div class="adminSaveBar"><div class="muted">As mudanças aparecem na página pública de Modelos após salvar.</div><button id="adminSaveModelsBtn" type="button" class="btn primary">SALVAR MODELOS</button></div>
+          </section>
+
+          <section id="adminTabSettings" class="adminSection hidden" data-admin-section="settings">
+            <div class="adminSectionHeader"><div><h3>Configurações</h3><p>Controle de vendas, lotes, prazo padrão e notificações.</p></div></div>
+            <div class="adminDetails" style="margin-bottom:0">
+              <div class="adminSettingsGrid">
+                <div><label>Vendas estudantes</label><select id="admSalesStudents"><option>ABERTAS</option><option>FECHADAS</option></select></div>
+                <div><label>Vendas servidores</label><select id="admSalesServers"><option>ABERTAS</option><option>FECHADAS</option></select></div>
+                <div><label>Lote atual estudantes</label><input id="admLotStudents"></div>
+                <div><label>Lote atual servidores</label><input id="admLotServers"></div>
+                <div><label>Prazo padrão após envio à gráfica (dias)</label><input id="admDefaultDays" type="number" min="1" max="120"></div>
+                <div class="switchStack">
+                  <label class="miniCheck"><input id="admAutoEmail" type="checkbox"> E-mails automáticos do sistema</label>
+                  <label class="miniCheck"><input id="admAsaasNotify" type="checkbox"> Notificações de cobrança do Asaas</label>
+                  <label class="miniCheck"><input id="admSms" type="checkbox"> SMS do Asaas</label>
+                  <label class="miniCheck"><input id="admWaAsaas" type="checkbox"> WhatsApp do Asaas</label>
+                </div>
+                <div class="full"><button id="adminSaveSettingsBtn" type="button" class="btn secondary">SALVAR CONFIGURAÇÕES</button><div class="muted" style="margin-top:8px">SMS e WhatsApp do Asaas podem gerar tarifas por envio.</div></div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </section>
@@ -1789,6 +1825,8 @@
     let adminOrdersCache = [];
     let adminSettingsCache = {};
     let adminSearchTimer = null;
+    let adminActiveTab = 'overview';
+    let adminModelsLoaded = false;
 
     function safeSessionGet(key){
       try { return sessionStorage.getItem(key) || ''; } catch (_) { return ''; }
@@ -3011,6 +3049,18 @@
        ÁREA DO GRÊMIO
        ========================= */
 
+    function showAdminTab(tab){
+      const safe = ['overview','orders','models','settings'].includes(tab) ? tab : 'overview';
+      adminActiveTab = safe;
+      document.querySelectorAll('[data-admin-section]').forEach(el => el.classList.toggle('hidden', el.dataset.adminSection !== safe));
+      document.querySelectorAll('[data-admin-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.adminTab === safe));
+      if(safe === 'models' && !adminModelsLoaded) loadAdminModels();
+      safeScrollTop(false);
+    }
+
+    document.querySelectorAll('[data-admin-tab]').forEach(btn => btn.addEventListener('click', () => showAdminTab(btn.dataset.adminTab)));
+    document.querySelectorAll('[data-admin-go]').forEach(btn => btn.addEventListener('click', () => showAdminTab(btn.dataset.adminGo)));
+
     function initAdmin(){
       if(!BOOT.adminConfigured){
         $('adminLoginHelp').innerHTML = '<strong>Acesso ainda não configurado.</strong><br>Na planilha, abra o menu “🛍️ Loja do Grêmio” → “🔐 Configurar acesso da Área do Grêmio”.';
@@ -3053,6 +3103,7 @@
       $('adminLoginBox').classList.add('hidden');
       $('adminPanel').classList.remove('hidden');
       $('adminOperator').textContent = name || 'Grêmio';
+      showAdminTab(adminActiveTab || 'overview');
     }
 
     function showAdminLogin(){
@@ -3066,6 +3117,8 @@
       safeSessionRemove(ADMIN_TOKEN_KEY);
       safeSessionRemove(ADMIN_NAME_KEY);
       adminOrdersCache = [];
+      adminModelsLoaded = false;
+      adminActiveTab = 'overview';
       showAdminLogin();
     });
 
@@ -3177,6 +3230,71 @@
     });
 
     $('admRefreshBtn').addEventListener('click', loadAdminData);
+    $('admOverviewRefresh').addEventListener('click', loadAdminData);
+
+    function renderAdminModel(prefix, data){
+      const configured = Boolean(data && data.id);
+      $(prefix).value = (data && data.id) || '';
+      const img = $(prefix + 'Img');
+      const empty = $(prefix + 'Empty');
+      const status = $(prefix + 'Status');
+      if(data && data.image){
+        img.src = data.image;
+        img.classList.remove('hidden');
+        empty.classList.add('hidden');
+      } else {
+        img.removeAttribute('src');
+        img.classList.add('hidden');
+        empty.classList.remove('hidden');
+      }
+      status.textContent = configured ? 'PUBLICADO' : 'SEM IMAGEM';
+      status.classList.toggle('ok', configured);
+    }
+
+    function loadAdminModels(){
+      const token = getAdminToken();
+      if(!token) return;
+      $('adminModelsFeedback').textContent = 'Carregando modelos...';
+      google.script.run
+        .withSuccessHandler(res => {
+          adminModelsLoaded = true;
+          renderAdminModel('admMockStudent', res.estudante || {});
+          renderAdminModel('admMockServerPolo', res.servidorPolo || {});
+          renderAdminModel('admMockServerCareca', res.servidorCareca || {});
+          $('adminModelsFeedback').textContent = 'Modelos sincronizados com o Google Drive.';
+        })
+        .withFailureHandler(err => {
+          $('adminModelsFeedback').textContent = err.message || 'Não foi possível carregar os modelos.';
+        })
+        .adminGetMockups(token);
+    }
+
+    $('adminSaveModelsBtn').addEventListener('click', () => {
+      const btn = $('adminSaveModelsBtn');
+      btn.disabled = true;
+      $('adminModelsFeedback').textContent = 'Validando e salvando imagens...';
+      const payload = {
+        estudante:$('admMockStudent').value,
+        servidorPolo:$('admMockServerPolo').value,
+        servidorCareca:$('admMockServerCareca').value
+      };
+      google.script.run
+        .withSuccessHandler(res => {
+          btn.disabled = false;
+          btn.textContent = 'SALVO ✓';
+          setTimeout(()=>btn.textContent='SALVAR MODELOS',1500);
+          adminModelsLoaded = true;
+          renderAdminModel('admMockStudent', res.estudante || {});
+          renderAdminModel('admMockServerPolo', res.servidorPolo || {});
+          renderAdminModel('admMockServerCareca', res.servidorCareca || {});
+          $('adminModelsFeedback').textContent = 'Modelos atualizados e publicados com sucesso.';
+        })
+        .withFailureHandler(err => {
+          btn.disabled = false;
+          $('adminModelsFeedback').textContent = err.message || 'Erro ao salvar os modelos.';
+        })
+        .adminUpdateMockups(getAdminToken(), payload);
+    });
 
     $('adminSaveSettingsBtn').addEventListener('click', () => {
       const btn = $('adminSaveSettingsBtn');
