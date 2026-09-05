@@ -1,0 +1,67 @@
+name: Bootstrap Apps Script source
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apps-script-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  pull-current-source:
+    name: Importar código atual do Apps Script
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validar credencial do clasp
+        shell: bash
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CLASPRC_JSON:-}" ]; then
+            echo "Secret CLASPRC_JSON não configurado."
+            echo "Faça login no clasp uma vez e salve o conteúdo de ~/.clasprc.json nesse secret."
+            exit 1
+          fi
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Puxar versão atual do Apps Script
+        working-directory: apps-script
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @google/clasp@3 pull
+
+      - name: Registrar fonte oficial no GitHub
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps-script
+          if git diff --cached --quiet; then
+            echo "O GitHub já está sincronizado com o Apps Script."
+            exit 0
+          fi
+          git commit -m "chore: importa código atual do Apps Script"
+          git push
+
+      - name: Resumo
+        run: |
+          echo "### Bootstrap concluído" >> "$GITHUB_STEP_SUMMARY"
+          echo "O conteúdo atual do Apps Script foi importado para \`apps-script/\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "A partir daqui, o GitHub passa a ser a fonte oficial do código." >> "$GITHUB_STEP_SUMMARY"
