@@ -1,0 +1,3322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <style>
+    :root{
+      --navy:#063667;
+      --green:#67B82E;
+      --orange:#F36F00;
+      --ink:#143B60;
+      --muted:#6A7680;
+      --line:#DDE3E1;
+      --bg:#F6F8F8;
+      --white:#FFFFFF;
+      --shadow:0 14px 42px rgba(6,54,103,.11);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;background:
+      linear-gradient(rgba(6,54,103,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(6,54,103,.035) 1px,transparent 1px),
+      var(--bg);
+      background-size:34px 34px;
+      color:var(--ink);font-family:Inter,Arial,sans-serif;
+    }
+    .topbar{height:8px;background:linear-gradient(90deg,var(--navy) 0 46%,var(--orange) 46% 72%,var(--green) 72%);}
+    .shell{max-width:1040px;margin:0 auto;padding:24px 18px 56px}
+    .header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+    .logo{width:74px;height:74px;border-radius:18px;background:#fff;border:1px solid var(--line);object-fit:contain;padding:7px;box-shadow:0 7px 20px rgba(6,54,103,.08)}
+    .logoFallback{display:grid;place-items:center;font-size:28px;font-weight:900;color:#fff;background:linear-gradient(145deg,var(--navy),#0a5b9f);padding:0}
+    .kicker{font-size:12px;font-weight:900;letter-spacing:.12em;color:var(--orange);text-transform:uppercase}
+    h1{margin:4px 0 3px;font-size:clamp(25px,5vw,42px);line-height:1.04;color:var(--navy)}
+    .sub{color:var(--muted);font-size:14px}
+    .nav{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0 26px}
+    .nav a{background:#fff;border:1px solid var(--line);padding:10px 14px;border-radius:999px;color:var(--navy);font-size:13px;font-weight:800;text-decoration:none}
+    .nav a.active{color:#fff;background:var(--navy);border-color:var(--navy)}
+    .card{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:var(--radius);overflow:hidden}
+    .hero{padding:26px;background:linear-gradient(125deg,#fff 0 66%,rgba(103,184,46,.11));border-bottom:1px solid var(--line)}
+    .heroBadge{display:inline-flex;align-items:center;gap:7px;background:#FFF4EB;color:var(--orange);font-weight:900;font-size:12px;border-radius:999px;padding:8px 11px}
+    .hero h2{font-size:29px;color:var(--navy);margin:13px 0 7px}
+    .hero p{margin:0;color:var(--muted);line-height:1.55}
+    .body{padding:26px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .full{grid-column:1/-1}
+    label{display:block;font-size:12px;font-weight:900;color:var(--navy);margin:0 0 7px;text-transform:uppercase;letter-spacing:.04em}
+    input,select,textarea{
+      width:100%;border:1.5px solid #ccd6db;background:#fff;border-radius:13px;
+      min-height:48px;padding:11px 13px;font:inherit;color:var(--ink);outline:none;
+      transition:.18s border,.18s box-shadow;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(103,184,46,.12)}
+    textarea{min-height:88px;resize:vertical}
+    .productBox{border:1px solid var(--line);border-radius:17px;padding:17px;background:#fbfcfc}
+    .price{font-size:30px;font-weight:950;color:var(--green);margin-top:5px}
+    .muted{color:var(--muted);font-size:13px;line-height:1.45}
+    .checks{display:flex;gap:10px;align-items:flex-start;background:#F1F6FA;border-radius:14px;padding:14px}
+    .checks input{width:19px;height:19px;min-height:19px;margin-top:1px}
+    .checks label{margin:0;text-transform:none;letter-spacing:0;font-weight:700;line-height:1.45}
+    .btn{
+      appearance:none;border:0;border-radius:14px;padding:15px 20px;font-weight:950;
+      font-size:15px;cursor:pointer;transition:.18s transform,.18s opacity;min-height:52px
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .primary{background:linear-gradient(90deg,var(--navy),#0d5d9f);color:#fff}
+    .secondary{background:#EEF6EA;color:#2b6e24}
+    .btn[disabled]{opacity:.55;cursor:wait;transform:none}
+    .notice{padding:14px 16px;border-radius:14px;margin:16px 0;font-size:13px;line-height:1.5}
+    .notice.orange{background:#FFF4EB;color:#87420a}
+    .notice.green{background:#EEF8EA;color:#2b6928}
+    .notice.blue{background:#F1F6FA;color:var(--navy)}
+    .result{display:none;margin-top:20px;padding:22px;border-radius:18px;background:#f7fbf5;border:1px solid #cfe5c7}
+    .result.show{display:block}
+    .orderId{font-size:28px;font-weight:950;color:var(--navy);letter-spacing:.03em}
+    .status{display:inline-flex;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:900}
+    .waiting{background:#FFF3CD;color:#7c6011}
+    .paid{background:#DFF2D8;color:#236520}
+    .danger{background:#FDE2E2;color:#9b2525}
+    .hidden{display:none!important}
+    .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px;line-height:1.6}
+    .spinner{display:none;margin-left:8px;letter-spacing:2px}
+    .btn.loading .spinner{display:inline;animation:checkoutPulse 1s ease-in-out infinite}
+    @keyframes checkoutPulse{0%,100%{opacity:.35}50%{opacity:1}}
+    .submitProgress{margin-top:10px;font-size:12px;line-height:1.45;color:var(--muted);font-weight:700;display:none;align-items:center;gap:8px}
+    .submitProgress.show{display:flex}
+    .submitProgressDot{width:9px;height:9px;border-radius:50%;background:#2b6cb0;box-shadow:0 0 0 5px rgba(43,108,176,.10);animation:checkoutDot 1.1s ease-in-out infinite}
+    @keyframes checkoutDot{0%,100%{transform:scale(.82);opacity:.55}50%{transform:scale(1);opacity:1}}
+
+
+    #publicNav.hidden{display:none!important}
+    body[data-page="acompanhar"] #envBanner, body[data-page="modelos"] #envBanner{display:none!important}
+
+    .brandCluster{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      flex-shrink:0;
+    }
+    .headerCopy{min-width:0}
+    .logoMini{
+      width:66px;
+      height:66px;
+      border-radius:17px;
+      background:#fff;
+      border:1px solid var(--line);
+      object-fit:contain;
+      padding:6px;
+      box-shadow:0 8px 24px rgba(6,54,103,.09);
+      transition:transform .25s ease,box-shadow .25s ease;
+      animation:logoFloat 5.5s ease-in-out infinite;
+    }
+    .logoMini:nth-of-type(2){animation-delay:.45s}
+    .logoMini:nth-of-type(3){animation-delay:.9s}
+    .logoMini:hover{
+      transform:translateY(-4px) scale(1.03);
+      box-shadow:0 14px 32px rgba(6,54,103,.15);
+    }
+    .logoProject{width:74px}
+    .brandDivider{
+      width:1px;
+      height:38px;
+      background:linear-gradient(180deg,transparent,var(--line),transparent);
+    }
+
+    .topbar{
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(90deg,var(--navy) 0 46%,var(--orange) 46% 72%,var(--green) 72%);
+    }
+    .topbar::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.62) 48%,transparent 70%);
+      width:35%;
+      transform:translateX(-160%);
+      animation:topShine 5s ease-in-out infinite;
+    }
+
+    .nav a{
+      transition:transform .2s ease,box-shadow .2s ease,background .2s ease,border-color .2s ease;
+    }
+    .nav a:hover{
+      transform:translateY(-2px);
+      box-shadow:0 8px 20px rgba(6,54,103,.09);
+      border-color:rgba(6,54,103,.25);
+    }
+
+    .ticker{
+      position:relative;
+      overflow:hidden;
+      margin:-8px 0 20px;
+      border:1px solid rgba(6,54,103,.08);
+      border-radius:999px;
+      background:rgba(255,255,255,.78);
+      box-shadow:0 7px 20px rgba(6,54,103,.05);
+      -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+      mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+    }
+    .tickerTrack{
+      display:flex;
+      width:max-content;
+      padding:8px 0;
+      animation:tickerMove 23s linear infinite;
+    }
+    .tickerTrack span{
+      white-space:nowrap;
+      padding-right:38px;
+      color:var(--navy);
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.08em;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+    }
+    .hero > *{position:relative;z-index:2}
+    .hero::before,
+    .hero::after{
+      content:"";
+      position:absolute;
+      border-radius:50%;
+      pointer-events:none;
+      z-index:1;
+      filter:blur(.2px);
+    }
+    .hero::before{
+      width:170px;height:170px;
+      right:-45px;top:-54px;
+      background:radial-gradient(circle at 35% 35%,rgba(243,111,0,.32),rgba(243,111,0,.06) 62%,transparent 66%);
+      animation:orbOne 8s ease-in-out infinite;
+    }
+    .hero::after{
+      width:145px;height:145px;
+      right:120px;bottom:-64px;
+      background:radial-gradient(circle at 45% 45%,rgba(103,184,46,.26),rgba(103,184,46,.05) 64%,transparent 68%);
+      animation:orbTwo 10s ease-in-out infinite;
+    }
+
+    .heroBadge{
+      animation:badgePulse 3.1s ease-in-out infinite;
+      box-shadow:0 0 0 0 rgba(243,111,0,.15);
+    }
+
+    .card{
+      transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease;
+    }
+    .card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 20px 52px rgba(6,54,103,.13);
+      border-color:rgba(6,54,103,.14);
+    }
+
+    .productBox{
+      transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+      background:
+        linear-gradient(135deg,rgba(103,184,46,.055),transparent 46%),
+        #fbfcfc;
+    }
+    .productBox:hover{
+      transform:translateY(-3px);
+      box-shadow:0 13px 30px rgba(6,54,103,.09);
+      border-color:rgba(103,184,46,.36);
+    }
+
+    .price{
+      display:inline-block;
+      animation:priceBreath 3.4s ease-in-out infinite;
+      transform-origin:left center;
+    }
+
+    .btn{
+      position:relative;
+      overflow:hidden;
+    }
+    .btn.primary::after{
+      content:"";
+      position:absolute;
+      top:-10%;
+      left:-75%;
+      width:45%;
+      height:120%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.38),transparent);
+      transform:skewX(-22deg);
+      animation:buttonShine 4.2s ease-in-out infinite;
+      pointer-events:none;
+    }
+    .btn.primary:hover{
+      box-shadow:0 12px 24px rgba(6,54,103,.18);
+    }
+
+    .result.show{
+      animation:resultPop .45s cubic-bezier(.2,.85,.25,1.18) both;
+    }
+    .orderId{
+      animation:orderGlow 2.8s ease-in-out infinite;
+    }
+
+    .reveal{
+      opacity:0;
+      transform:translateY(16px);
+      animation:revealUp .62s cubic-bezier(.2,.8,.2,1) forwards;
+    }
+    .reveal-1{animation-delay:.04s}
+    .reveal-2{animation-delay:.12s}
+    .reveal-3{animation-delay:.2s}
+    .reveal-4{animation-delay:.28s}
+
+    @keyframes revealUp{
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes logoFloat{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-3px)}
+    }
+    @keyframes topShine{
+      0%,62%{transform:translateX(-160%)}
+      84%,100%{transform:translateX(440%)}
+    }
+    @keyframes tickerMove{
+      from{transform:translateX(0)}
+      to{transform:translateX(-50%)}
+    }
+    @keyframes orbOne{
+      0%,100%{transform:translate(0,0) scale(1)}
+      50%{transform:translate(-12px,12px) scale(1.07)}
+    }
+    @keyframes orbTwo{
+      0%,100%{transform:translate(0,0) scale(1)}
+      50%{transform:translate(11px,-8px) scale(.94)}
+    }
+    @keyframes badgePulse{
+      0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(243,111,0,.13)}
+      50%{transform:scale(1.025);box-shadow:0 0 0 7px rgba(243,111,0,0)}
+    }
+    @keyframes priceBreath{
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(1.025)}
+    }
+    @keyframes buttonShine{
+      0%,56%{left:-75%}
+      80%,100%{left:135%}
+    }
+    @keyframes resultPop{
+      from{opacity:0;transform:translateY(10px) scale(.985)}
+      to{opacity:1;transform:translateY(0) scale(1)}
+    }
+    @keyframes orderGlow{
+      0%,100%{text-shadow:0 0 0 rgba(6,54,103,0)}
+      50%{text-shadow:0 5px 18px rgba(6,54,103,.13)}
+    }
+
+
+    .envBanner{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      margin:0 0 18px;
+      padding:13px 15px;
+      border-radius:15px;
+      border:1px solid #ffd893;
+      background:linear-gradient(135deg,#fff8e9,#fffdf7);
+      color:#7a5511;
+      font-size:13px;
+      line-height:1.45;
+      box-shadow:0 8px 24px rgba(122,85,17,.06);
+    }
+    .envBanner strong{color:#6b4809}
+    .paymentMethodsMini{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .paymentMethodsMini span{display:inline-flex;align-items:center;border:1px solid rgba(6,54,103,.14);background:#fff;color:#063667;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:950;letter-spacing:.04em}
+    .paymentChoiceBlock{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      background:linear-gradient(145deg,#fbfcfd,#f7faf8);
+    }
+    .paymentChoiceGrid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+      margin-top:8px;
+    }
+    .payChoice{
+      appearance:none;
+      border:1px solid #dbe4e8;
+      background:#fff;
+      border-radius:15px;
+      padding:14px 12px;
+      min-height:112px;
+      text-align:left;
+      color:var(--navy);
+      cursor:pointer;
+      transition:.18s ease;
+      font:inherit;
+    }
+    .payChoice:hover{transform:translateY(-1px);border-color:rgba(6,54,103,.28);box-shadow:0 8px 24px rgba(6,54,103,.06)}
+    .payChoice.active{border:2px solid var(--navy);background:linear-gradient(145deg,#f7fbff,#fff);box-shadow:0 8px 24px rgba(6,54,103,.09)}
+    .payChoiceTag{display:inline-flex;align-items:center;justify-content:center;min-width:47px;height:26px;padding:0 8px;border-radius:999px;background:#edf4f9;color:var(--navy);font-size:10px;font-weight:950;letter-spacing:.05em}
+    .payChoice.active .payChoiceTag{background:var(--navy);color:#fff}
+    .payChoice strong{display:block;margin:9px 0 3px;font-size:14px}
+    .payChoice small{display:block;color:var(--muted);font-size:10px;line-height:1.45;font-weight:700}
+    .payChoiceValue{display:block;margin-top:8px;color:var(--greenDark);font-size:11px;font-weight:950}
+    .installmentPanel{border:1px solid #dce7d7;background:#fbfff9;border-radius:16px;padding:14px 15px}
+    .installmentLoading{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:12px;font-weight:800}
+    .installmentDot{width:8px;height:8px;border-radius:50%;background:var(--orange);animation:badgePulse 1.2s infinite}
+    .paymentPreview{margin-top:10px;padding:12px 13px;border-radius:13px;background:#f0f6fa;color:#244761;font-size:12px;line-height:1.5}
+    .paymentPreview strong{color:var(--navy)}
+    .feeDisclosure{font-size:10px;color:var(--muted);line-height:1.45;margin-top:8px}
+    @media(max-width:760px){.paymentChoiceGrid{grid-template-columns:1fr}.payChoice{min-height:0}}
+
+    .pixBox{
+      margin-top:18px;
+      border:1px solid #d6e6d0;
+      background:linear-gradient(145deg,#fbfff9,#f5fbf2);
+      border-radius:18px;
+      padding:18px;
+    }
+    .pixGrid{
+      display:grid;
+      grid-template-columns:190px 1fr;
+      gap:18px;
+      align-items:center;
+    }
+    .pixQr{
+      width:190px;
+      height:190px;
+      object-fit:contain;
+      background:#fff;
+      padding:8px;
+      border:1px solid var(--line);
+      border-radius:16px;
+    }
+    .pixTitle{
+      font-weight:950;
+      color:var(--navy);
+      font-size:18px;
+      margin-bottom:7px;
+    }
+    .pixPayload{
+      min-height:78px;
+      font-size:12px;
+      line-height:1.4;
+      resize:none;
+      background:#fff;
+    }
+    .pixActions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:9px;
+      margin-top:10px;
+    }
+    .smallBtn{
+      min-height:42px;
+      padding:10px 14px;
+      font-size:12px;
+    }
+    .confirmed{background:#DCEAF8;color:#164e7a}
+    @media(max-width:720px){
+      .pixGrid{grid-template-columns:1fr}
+      .pixQr{width:min(220px,100%);height:auto;aspect-ratio:1;margin:auto}
+    }
+    .ghostBtn{
+      background:#F1F4F6;
+      color:var(--navy);
+    }
+    .whatsappBtn{
+      background:#e7f7e9;
+      color:#226a2a;
+    }
+
+    .timeline{
+      display:grid;
+      gap:0;
+      margin:18px 0;
+      padding:4px 0;
+    }
+    .timelineStep{
+      position:relative;
+      display:grid;
+      grid-template-columns:34px 1fr;
+      gap:10px;
+      min-height:58px;
+    }
+    .timelineStep:not(:last-child)::after{
+      content:"";
+      position:absolute;
+      left:16px;
+      top:31px;
+      bottom:-2px;
+      width:2px;
+      background:#dce3e6;
+    }
+    .timelineStep.done:not(:last-child)::after{background:var(--green)}
+    .timelineDot{
+      width:32px;height:32px;border-radius:50%;
+      display:grid;place-items:center;
+      border:2px solid #d5dde1;background:#fff;color:#8b969d;
+      font-size:14px;font-weight:950;z-index:2;
+    }
+    .timelineStep.done .timelineDot{
+      background:var(--green);border-color:var(--green);color:#fff;
+    }
+    .timelineStep.current .timelineDot{
+      border-color:var(--orange);color:var(--orange);
+      box-shadow:0 0 0 5px rgba(243,111,0,.10);
+    }
+    .timelineCopy strong{display:block;color:var(--navy);font-size:13px;margin:3px 0}
+    .timelineCopy span{color:var(--muted);font-size:12px;line-height:1.4}
+
+    .modalOverlay{
+      position:fixed;inset:0;z-index:9999;
+      display:grid;place-items:center;
+      padding:18px;
+      background:rgba(5,28,51,.58);
+      backdrop-filter:blur(7px);
+      animation:modalFade .22s ease both;
+    }
+    .modalCard{
+      position:relative;
+      width:min(620px,100%);
+      max-height:92vh;
+      overflow:auto;
+      background:#fff;border-radius:24px;
+      border:1px solid rgba(255,255,255,.4);
+      box-shadow:0 28px 90px rgba(3,25,48,.28);
+      padding:28px;
+      animation:modalPop .34s cubic-bezier(.2,.86,.28,1.14) both;
+    }
+    .successCard{text-align:center;overflow:hidden;padding:34px 28px}
+    .successIcon{
+      width:84px;height:84px;margin:0 auto 16px;border-radius:50%;
+      display:grid;place-items:center;
+      font-size:44px;font-weight:950;color:#fff;
+      background:linear-gradient(145deg,var(--green),#4a9d25);
+      box-shadow:0 14px 34px rgba(103,184,46,.28);
+      animation:successBounce .65s cubic-bezier(.2,.9,.24,1.3) both;
+    }
+    .successCard h2{color:var(--navy);font-size:28px;margin:7px 0 8px}
+    .successCard p{color:var(--muted);line-height:1.55}
+    .modalActions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .publicMessageCard{max-width:500px;text-align:center}.publicMessageCard .successIcon{background:linear-gradient(135deg,var(--orange),#ff9b3d);box-shadow:0 10px 28px rgba(243,111,0,.22)}.publicMessageCard p{font-size:14px;line-height:1.6;white-space:pre-line}
+    .modalClose{
+      position:absolute;right:15px;top:12px;width:38px;height:38px;
+      border:0;border-radius:50%;background:#f2f4f5;color:#5d6870;
+      font-size:25px;cursor:pointer;
+    }
+    .confettiLayer{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .confettiPiece{
+      position:absolute;top:-18px;width:9px;height:16px;border-radius:2px;
+      animation:confettiFall var(--dur,2.7s) linear forwards;
+      transform:rotate(var(--rot,0deg));
+    }
+
+    .adminHero{background:linear-gradient(125deg,#fff 0 56%,rgba(6,54,103,.08))}
+    .adminLogin{
+      max-width:520px;margin:0 auto;display:grid;gap:16px;
+      padding:8px 0 5px;
+    }
+    .adminTop{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--line);
+    }
+    .statsGrid{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 20px;
+    }
+    .statCard{
+      background:linear-gradient(145deg,#fbfcfd,#f3f7f8);
+      border:1px solid var(--line);border-radius:16px;padding:15px;
+    }
+    .statCard span{display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+    .statCard strong{display:block;color:var(--navy);font-size:24px;margin-top:5px}
+    .statCard.wide{grid-column:span 2}
+    .adminDetails{
+      border:1px solid var(--line);border-radius:16px;background:#fbfcfc;margin-bottom:18px;
+      overflow:hidden;
+    }
+    .adminDetails summary{
+      cursor:pointer;padding:15px 17px;font-weight:900;color:var(--navy);
+      background:#f7fafb;
+    }
+    .adminSettingsGrid{
+      padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px;
+    }
+    .switchStack{display:grid;gap:9px;align-content:start}
+    .miniCheck{
+      display:flex;align-items:flex-start;gap:8px;
+      text-transform:none!important;letter-spacing:0!important;
+      font-size:12px!important;line-height:1.4;color:var(--ink)!important;
+    }
+    .miniCheck input{width:18px;height:18px;min-height:18px;margin:0;flex:none}
+    .miniCheckRow{padding:10px 0}
+    .adminFilters{
+      display:grid;grid-template-columns:2fr repeat(4,1fr) auto;
+      gap:10px;align-items:end;
+      padding:14px;border:1px solid var(--line);border-radius:17px;background:#fbfcfc;
+    }
+    .adminFilters label{font-size:10px}
+    .adminFilters input,.adminFilters select{min-height:42px;padding:9px 10px;font-size:13px}
+    .adminOrders{display:grid;gap:11px}
+    .adminOrder{
+      display:grid;grid-template-columns:1.25fr 1.1fr .8fr .8fr auto;
+      gap:12px;align-items:center;
+      border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;
+      transition:.18s transform,.18s box-shadow;
+    }
+    .adminOrder:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(6,54,103,.08)}
+    .adminOrderTitle{font-weight:950;color:var(--navy);font-size:14px}
+    .adminOrderSub{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+    .adminOrderStatus{font-size:11px;font-weight:850;line-height:1.45}
+    .adminOrder .btn{min-height:40px;padding:9px 12px;font-size:11px}
+    .adminEditCard{width:min(760px,100%)}
+    .adminEditCard h2{margin:5px 0 8px;color:var(--navy)}
+    .adminEditSummary{
+      padding:12px 14px;border-radius:13px;background:#f4f7f8;color:var(--muted);
+      font-size:12px;line-height:1.5;margin-bottom:17px;
+    }
+    .adminEditActions{display:flex;gap:9px;flex-wrap:wrap}
+    .adminEditActions .btn{min-height:45px;font-size:12px}
+    .adminHistory{padding:12px 16px;display:grid;gap:10px}
+    .historyItem{padding:10px 0;border-bottom:1px solid var(--line)}
+    .historyItem:last-child{border-bottom:0}
+    .historyItem strong{display:block;color:var(--navy);font-size:12px}
+    .historyItem span{display:block;color:var(--muted);font-size:11px;line-height:1.45;margin-top:2px}
+
+    @keyframes modalFade{from{opacity:0}to{opacity:1}}
+    @keyframes modalPop{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+    @keyframes successBounce{0%{transform:scale(.45);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+    @keyframes confettiFall{
+      0%{transform:translate3d(0,-20px,0) rotate(0deg);opacity:1}
+      100%{transform:translate3d(var(--x,0px),620px,0) rotate(760deg);opacity:0}
+    }
+
+    @media(max-width:900px){
+      .adminFilters{grid-template-columns:1fr 1fr}
+      .filterSearch{grid-column:1/-1}
+      .adminOrder{grid-template-columns:1fr 1fr}
+      .adminOrder > :last-child{grid-column:1/-1}
+      .statsGrid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:720px){
+      .adminSettingsGrid{grid-template-columns:1fr}
+      .adminFilters{grid-template-columns:1fr}
+      .filterSearch{grid-column:auto}
+      .adminOrder{grid-template-columns:1fr}
+      .adminOrder > :last-child{grid-column:auto}
+      .statsGrid{grid-template-columns:1fr 1fr}
+      .statCard.wide{grid-column:1/-1}
+      .modalCard{padding:22px 18px}
+      .successCard{padding:30px 18px}
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{
+        animation-duration:.001ms!important;
+        animation-iteration-count:1!important;
+        scroll-behavior:auto!important;
+        transition-duration:.001ms!important;
+      }
+    }
+
+    @media(max-width:720px){
+      .grid{grid-template-columns:1fr}
+      .full{grid-column:auto}
+      .body,.hero{padding:20px}
+      .header{align-items:flex-start;gap:13px}
+      .brandCluster{gap:7px}
+      .logo{width:58px;height:58px}
+      .logoMini{width:54px;height:54px;border-radius:14px}
+      .logoProject{width:60px}
+      .brandDivider{height:30px}
+      .ticker{margin-top:-10px}
+    }
+
+    /* ===== V6.3 — VISUAL RESPONSIVO SEM PERDER PERFORMANCE ===== */
+
+    /* TABLETS — retrato e paisagem */
+    @media (min-width:721px) and (max-width:1024px){
+      .shell{
+        max-width:920px;
+        padding:22px 24px 48px;
+      }
+
+      .header{
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        gap:12px;
+        margin-bottom:18px;
+      }
+
+      .brandCluster{
+        width:100%;
+        justify-content:center;
+        flex-wrap:nowrap;
+        gap:10px;
+      }
+
+      .logoFallback,
+      .logoMini{
+        width:64px;
+        height:64px;
+        min-width:64px;
+      }
+
+      .logoProject{
+        width:72px;
+        min-width:72px;
+      }
+
+      .headerCopy{
+        width:100%;
+        text-align:center;
+      }
+
+      .nav{
+        justify-content:center;
+        margin:16px 0 22px;
+      }
+
+      .ticker{
+        margin:-5px 0 20px;
+      }
+
+      .tickerTrack{
+        animation-duration:25s;
+      }
+
+      .hero{
+        padding:24px;
+      }
+
+      .body{
+        padding:24px;
+      }
+
+      .adminFilters{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .filterSearch{
+        grid-column:1/-1;
+      }
+    }
+
+    /* Tablets menores / retrato: formulário mais confortável em uma coluna */
+    @media (min-width:721px) and (max-width:840px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      .full{
+        grid-column:auto;
+      }
+
+      .pixGrid{
+        grid-template-columns:170px 1fr;
+      }
+
+      .adminOrder{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .adminOrder > :last-child{
+        grid-column:1/-1;
+      }
+    }
+
+    /* CELULAR */
+    @media(max-width:720px){
+      body{
+        background-size:28px 28px;
+        background-color:#F7F9F9;
+      }
+
+      .shell{
+        width:100%;
+        padding:14px 12px 34px;
+      }
+
+      /* LOGOS ACIMA E CENTRALIZADAS */
+      .header{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        gap:10px;
+        margin-bottom:13px;
+      }
+
+      .brandCluster{
+        width:100%;
+        justify-content:center;
+        align-items:center;
+        flex-wrap:nowrap;
+        gap:8px;
+        margin:0 auto 3px;
+        overflow:visible;
+      }
+
+      .logoFallback,
+      .logoMini{
+        width:52px;
+        height:52px;
+        min-width:52px;
+        border-radius:14px;
+        padding:5px;
+        box-shadow:0 6px 18px rgba(6,54,103,.09);
+      }
+
+      .logoProject{
+        width:60px;
+        min-width:60px;
+      }
+
+      .brandDivider{
+        height:29px;
+      }
+
+      .headerCopy{
+        width:100%;
+        padding:0 4px;
+        text-align:center;
+      }
+
+      .kicker{
+        font-size:10px;
+        letter-spacing:.11em;
+        text-align:center;
+      }
+
+      h1{
+        margin:4px 0 4px;
+        font-size:29px;
+        line-height:1.04;
+        text-align:center;
+      }
+
+      .sub{
+        max-width:420px;
+        margin:0 auto;
+        font-size:12px;
+        line-height:1.42;
+        text-align:center;
+      }
+
+      /* Mantém os mesmos "pills" do desktop, só reorganizados */
+      .nav{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        margin:13px 0 17px;
+      }
+
+      .nav a{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        min-height:43px;
+        padding:9px 8px;
+        border-radius:999px;
+        font-size:12px;
+        text-align:center;
+        box-shadow:0 4px 14px rgba(6,54,103,.05);
+      }
+
+      #navStatus{
+        grid-column:1/-1;
+      }
+
+      /* A BARRA/TICKER VOLTA NO CELULAR */
+      .ticker{
+        display:block!important;
+        margin:-3px 0 16px;
+        border-radius:999px;
+        -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+        mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+      }
+
+      .tickerTrack{
+        padding:7px 0;
+        animation:tickerMove 27s linear infinite!important;
+        will-change:transform;
+      }
+
+      .tickerTrack span{
+        padding-right:30px;
+        font-size:10px;
+        letter-spacing:.07em;
+      }
+
+      .card{
+        border-radius:18px;
+        box-shadow:0 9px 28px rgba(6,54,103,.09);
+      }
+
+      .hero,
+      .body{
+        padding:18px 15px;
+      }
+
+      .hero h2{
+        font-size:24px;
+        line-height:1.12;
+        margin:10px 0 6px;
+      }
+
+      .hero p{
+        font-size:13px;
+        line-height:1.48;
+      }
+
+      .heroBadge{
+        font-size:10px;
+        padding:7px 9px;
+      }
+
+      /* BOLAS/ORBS E EFEITOS VISUAIS VOLTAM, MAS LEVES */
+      .topbar::after{
+        animation:topShine 7s ease-in-out infinite!important;
+        will-change:transform;
+      }
+
+      .hero::before{
+        width:145px;
+        height:145px;
+        right:-52px;
+        top:-48px;
+        animation:orbOne 10s ease-in-out infinite!important;
+        will-change:transform;
+      }
+
+      .hero::after{
+        width:122px;
+        height:122px;
+        right:78px;
+        bottom:-58px;
+        animation:orbTwo 12s ease-in-out infinite!important;
+        will-change:transform;
+      }
+
+      .logoMini{
+        animation:logoFloat 6.5s ease-in-out infinite!important;
+      }
+
+      .logoMini:nth-of-type(2){
+        animation-delay:.45s!important;
+      }
+
+      .logoMini:nth-of-type(3){
+        animation-delay:.9s!important;
+      }
+
+      .heroBadge{
+        animation:badgePulse 4.2s ease-in-out infinite!important;
+      }
+
+      .price{
+        animation:priceBreath 4s ease-in-out infinite!important;
+      }
+
+      .btn.primary::after{
+        animation:buttonShine 5.4s ease-in-out infinite!important;
+      }
+
+      .orderId{
+        animation:orderGlow 3.6s ease-in-out infinite!important;
+      }
+
+      .grid{
+        grid-template-columns:1fr;
+        gap:14px;
+      }
+
+      .full{
+        grid-column:auto;
+      }
+
+      label{
+        font-size:11px;
+        margin-bottom:6px;
+      }
+
+      input,
+      select,
+      textarea{
+        min-height:52px;
+        border-radius:12px;
+        padding:12px;
+        font-size:16px;
+      }
+
+      textarea{
+        min-height:90px;
+      }
+
+      .productBox{
+        padding:14px;
+        border-radius:15px;
+      }
+
+      .price{
+        font-size:27px;
+      }
+
+      .checks{
+        gap:9px;
+        padding:12px;
+        border-radius:13px;
+      }
+
+      .btn{
+        width:100%;
+        min-height:54px;
+        border-radius:13px;
+        padding:14px 16px;
+        font-size:14px;
+      }
+
+      .notice{
+        margin:13px 0;
+        padding:12px 13px;
+      }
+
+      .result{
+        padding:17px 14px;
+        border-radius:15px;
+      }
+
+      .orderId{
+        font-size:22px;
+        word-break:break-word;
+      }
+
+      .footer{
+        margin-top:18px;
+        font-size:11px;
+      }
+
+      .modalOverlay{
+        padding:10px;
+        align-items:end;
+      }
+
+      .modalCard{
+        width:100%;
+        max-height:90vh;
+        border-radius:20px 20px 10px 10px;
+        padding:20px 15px;
+      }
+
+      .successCard{
+        padding:27px 16px 22px;
+      }
+
+      .successIcon{
+        width:70px;
+        height:70px;
+        font-size:36px;
+      }
+
+      .successCard h2{
+        font-size:24px;
+      }
+
+      .adminTop{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .adminSettingsGrid,
+      .adminFilters,
+      .adminOrder{
+        grid-template-columns:1fr;
+      }
+
+      .statsGrid{
+        grid-template-columns:1fr 1fr;
+      }
+
+      /* Hover não faz sentido no touch, então só removemos o deslocamento ao tocar. */
+      .card:hover,
+      .productBox:hover,
+      .nav a:hover,
+      .logoMini:hover{
+        transform:none;
+      }
+    }
+
+    @media(max-width:420px){
+      .shell{
+        padding-left:10px;
+        padding-right:10px;
+      }
+
+      h1{
+        font-size:27px;
+      }
+
+      .brandCluster{
+        gap:6px;
+      }
+
+      .logoFallback,
+      .logoMini{
+        width:47px;
+        height:47px;
+        min-width:47px;
+      }
+
+      .logoProject{
+        width:54px;
+        min-width:54px;
+      }
+
+      .brandDivider{
+        height:25px;
+      }
+
+      .nav a{
+        font-size:11px;
+      }
+
+      .tickerTrack span{
+        font-size:9px;
+        padding-right:25px;
+      }
+
+      .statsGrid{
+        grid-template-columns:1fr;
+      }
+
+      .statCard.wide{
+        grid-column:auto;
+      }
+    }
+
+
+    /* ===== PÁGINA: CONHEÇA OS MODELOS ===== */
+    .modelsIntro{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
+      margin-bottom:20px;padding:16px 18px;border:1px solid #dbe5ea;
+      border-radius:17px;background:linear-gradient(135deg,#F8FBFD,#F5FAF1);
+    }
+    .modelsIntro strong{display:block;color:var(--navy);font-size:14px;margin-bottom:5px}
+    .modelsIntro p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+    .modelsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .modelCard{
+      border:1px solid var(--line);border-radius:19px;background:#fff;overflow:hidden;
+      box-shadow:0 10px 30px rgba(6,54,103,.07);transition:.2s transform,.2s box-shadow;
+    }
+    .modelCard:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(6,54,103,.11)}
+    .modelCard.studentModel{grid-column:1/-1}
+    .modelVisual{
+      position:relative;min-height:300px;background:
+      radial-gradient(circle at 18% 15%,rgba(103,184,46,.12),transparent 30%),
+      radial-gradient(circle at 88% 18%,rgba(243,111,0,.10),transparent 30%),
+      #F7F9F9;
+      display:grid;place-items:center;padding:16px;overflow:hidden;
+    }
+    .modelVisual img{
+      width:100%;height:100%;max-height:430px;object-fit:contain;display:block;
+      cursor:zoom-in;filter:drop-shadow(0 10px 18px rgba(6,54,103,.10));
+    }
+    .modelPlaceholder{
+      min-height:260px;width:100%;display:grid;place-items:center;text-align:center;
+      border:1.5px dashed #cbd7db;border-radius:16px;padding:28px;color:var(--muted);
+      background:rgba(255,255,255,.68);
+    }
+    .modelPlaceholderIcon{font-size:38px;margin-bottom:10px;filter:grayscale(.15)}
+    .modelPlaceholder strong{display:block;color:var(--navy);font-size:15px;margin-bottom:5px}
+    .modelContent{padding:18px}
+    .modelTopline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+    .modelType{font-size:11px;font-weight:950;letter-spacing:.08em;color:var(--orange);text-transform:uppercase}
+    .modelBadge{font-size:10px;font-weight:900;background:#EEF8EA;color:#2d6f29;padding:6px 8px;border-radius:999px}
+    .modelContent h3{margin:0 0 7px;color:var(--navy);font-size:21px}
+    .modelContent p{margin:0 0 13px;color:var(--muted);font-size:13px;line-height:1.55}
+    .modelFacts{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 15px;padding:0;list-style:none}
+    .modelFacts li{font-size:11px;font-weight:800;color:var(--ink);background:#F1F6FA;padding:7px 9px;border-radius:999px}
+    .modelsActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:21px}
+    .modelsActions .btn{flex:1;min-width:190px;text-decoration:none;text-align:center;display:inline-grid;place-items:center}
+    .modelZoomHint{position:absolute;right:12px;bottom:12px;background:rgba(6,54,103,.86);color:#fff;border-radius:999px;padding:7px 9px;font-size:10px;font-weight:900;display:none}
+    .modelVisual.hasImage .modelZoomHint{display:block}
+    .modelModal{position:fixed;inset:0;z-index:9999;background:rgba(5,20,35,.84);display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(5px)}
+    .modelModal.show{display:flex}
+    .modelModalInner{position:relative;max-width:min(1100px,96vw);max-height:92vh;background:#fff;border-radius:20px;padding:12px;box-shadow:0 30px 90px rgba(0,0,0,.35)}
+    .modelModal img{display:block;max-width:100%;max-height:86vh;object-fit:contain;border-radius:14px}
+    .modelModalClose{position:absolute;right:9px;top:9px;width:38px;height:38px;border:0;border-radius:50%;background:var(--navy);color:#fff;font-size:20px;font-weight:900;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+
+    @media(max-width:760px){
+      .modelsGrid{grid-template-columns:1fr}
+      .modelCard.studentModel{grid-column:auto}
+      .modelVisual{min-height:235px;padding:10px}
+      .modelVisual img{max-height:330px}
+      .modelsIntro{flex-direction:column}
+    }
+
+
+    /* ===== V7.0.3 — REVISÃO VISUAL E NAVEGAÇÃO SEM RECARREGAMENTO ===== */
+    html{scroll-behavior:smooth;scroll-padding-top:18px}
+    body{min-height:100vh;overflow-x:hidden}
+    .shell{max-width:1080px;padding-top:22px}
+    .header{margin-bottom:18px}
+    .headerCopy .kicker{max-width:720px}
+    .nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:15px 0 20px}
+    .nav a{text-align:center;display:flex;align-items:center;justify-content:center;min-height:44px;padding:10px 12px;transition:.18s ease}
+    .nav a:hover{border-color:rgba(6,54,103,.28);box-shadow:0 6px 16px rgba(6,54,103,.06)}
+    .nav a.active{box-shadow:0 7px 18px rgba(6,54,103,.17)}
+    .ticker{margin-bottom:18px}
+    .card{scroll-margin-top:18px}
+    .hero h2{max-width:780px}
+    .body{padding-top:22px}
+    .modelShortcut{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 18px;padding:16px 17px;border:1px solid #dce8d6;border-radius:16px;background:linear-gradient(135deg,#fbfef9,#f3f9ef)}
+    .modelShortcut>div{display:grid;gap:3px}.modelShortcutEyebrow{font-size:9px;letter-spacing:.12em;font-weight:950;color:var(--green)}
+    .modelShortcut strong{font-size:14px;color:var(--navy)}.modelShortcut span:not(.modelShortcutEyebrow){font-size:12px;color:var(--muted);line-height:1.45}
+    .compactBtn{min-height:40px!important;padding:9px 14px!important;white-space:nowrap}
+    .productBox{min-height:128px}
+    .price{min-height:38px;display:flex;align-items:center}
+    .modelsHero{background:linear-gradient(125deg,#fff 0 63%,rgba(243,111,0,.075) 63%,rgba(103,184,46,.09))}
+    .modelsNote{display:grid;gap:4px;margin-bottom:18px;padding:14px 16px;border-left:4px solid var(--green);background:#f7fbf5;border-radius:4px 14px 14px 4px}
+    .modelsNote strong{color:var(--navy);font-size:13px}.modelsNote span{color:var(--muted);font-size:12px;line-height:1.45}
+    .modelsGrid{gap:16px}.modelCard{box-shadow:none;border-color:#dfe7e6}
+    .modelCard:hover{transform:none;box-shadow:0 10px 26px rgba(6,54,103,.07)}
+    .modelCard.studentModel{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);align-items:stretch}
+    .studentModel .modelVisual{border-right:1px solid var(--line);border-bottom:0}
+    .modelVisual{min-height:285px;background:linear-gradient(145deg,#f8fafb,#f6faf3);padding:14px}
+    .modelPlaceholder{min-height:255px;border-color:#cad7d7;background:rgba(255,255,255,.72);padding:22px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px}
+    .modelPlaceholder strong{font-size:14px}.modelPlaceholder span{font-size:12px;max-width:360px;line-height:1.45}
+    .modelPlaceholderIcon{display:none}
+    .shirtOutline{position:relative;width:74px;height:72px;margin-bottom:8px;opacity:.9}
+    .shirtOutline:before{content:"";position:absolute;left:18px;top:7px;width:38px;height:58px;border:3px solid var(--navy);border-radius:10px 10px 8px 8px;background:linear-gradient(150deg,rgba(6,54,103,.035),rgba(103,184,46,.06))}
+    .shirtOutline:after{content:"";position:absolute;left:3px;top:11px;width:68px;height:26px;border-top:3px solid var(--navy);transform:skewY(-12deg);clip-path:polygon(0 0,25% 0,28% 100%,72% 100%,75% 0,100% 0,90% 100%,10% 100%)}
+    .shirtOutline span{position:absolute;z-index:2;left:31px;top:7px;width:13px;height:9px;border:2px solid var(--orange);border-top:0;border-radius:0 0 8px 8px}
+    .shirtOutline.crew span{border-color:var(--green)}
+    .modelContent{padding:19px}.modelContent h3{margin-top:2px}.modelPrice{font-size:22px;font-weight:950;color:var(--green);margin:-1px 0 9px}.modelTopline{margin-bottom:8px}
+    .modelFacts li{background:#f3f7fa}.modelsActions{padding-top:2px}.modelsActions .btn{border:0}
+    .footer{margin-top:24px;padding-top:18px;border-top:1px solid rgba(6,54,103,.09)}
+    .pageSwitching{pointer-events:none}
+    @media(max-width:760px){
+      .shell{padding:14px 10px 38px}.header{gap:11px;margin-bottom:14px}.brandCluster{gap:5px}.logoMini,.logoFallback{width:52px;height:52px;min-width:52px;border-radius:14px}.logoProject{width:58px;min-width:58px}.brandDivider{height:28px}.kicker{font-size:9px}.header h1{font-size:27px}
+      .nav{grid-template-columns:1fr 1fr;margin:12px 0 16px;gap:7px}.nav a{font-size:11px;min-height:41px;padding:8px 8px}.ticker{margin-bottom:14px}
+      .hero{padding:21px 18px}.body{padding:18px 14px}.modelShortcut{align-items:stretch;flex-direction:column;gap:10px}.compactBtn{width:100%}
+      .modelCard.studentModel{display:block}.studentModel .modelVisual{border-right:0;border-bottom:1px solid var(--line)}.modelVisual{min-height:230px}.modelPlaceholder{min-height:210px}
+      .modelsActions{display:grid;grid-template-columns:1fr}.modelsActions .btn{min-width:0}.paymentMethodsMini{gap:4px}
+    }
+    @media(max-width:420px){.headerCopy .sub{font-size:11px}.nav a{font-size:10px}.modelContent{padding:16px}.modelFacts li{font-size:10px}}
+
+  </style>
+</head>
+<body data-page="<?!= page ?>">
+  <div class="topbar"></div>
+  <main class="shell">
+    <header class="header reveal reveal-1">
+      <div class="brandCluster">
+        <div id="logoFallback" class="logo logoFallback">PA</div>
+        <img id="logoEscola" class="logoMini hidden" alt="Logo da escola">
+        <span id="brandDivider1" class="brandDivider hidden"></span>
+        <img id="logoGremio" class="logoMini hidden" alt="Logo do Grêmio Estudantil">
+        <span id="brandDivider2" class="brandDivider hidden"></span>
+        <img id="logoProjeto" class="logoMini logoProject hidden" alt="Logo do projeto">
+      </div>
+      <div class="headerCopy">
+        <div class="kicker">LOJA DIGITAL DO GRÊMIO • Nossa Escola, Nossa Identidade</div>
+        <h1>Nova Camisa Oficial</h1>
+        <div class="sub" id="schoolName"></div>
+      </div>
+    </header>
+
+    <nav id="publicNav" class="nav reveal reveal-2">
+      <a id="navEst" href="#">Estudantes</a>
+      <a id="navServ" href="#">Profissionais</a>
+      <a id="navModels" href="#">Modelos</a>
+      <a id="navStatus" href="#">Acompanhar pedido</a>
+    </nav>
+
+    <div id="ticker" class="ticker reveal reveal-2" aria-hidden="true">
+      <div class="tickerTrack">
+        <span>1º LOTE • NOVA CAMISA OFICIAL • PEDIDOS PELO SITE • ACOMPANHAMENTO ONLINE • </span>
+        <span>1º LOTE • NOVA CAMISA OFICIAL • PEDIDOS PELO SITE • ACOMPANHAMENTO ONLINE • </span>
+      </div>
+    </div>
+
+    <div id="envBanner" class="envBanner hidden" aria-hidden="true"></div>
+
+    <section id="orderCard" class="card reveal reveal-3">
+      <div class="hero">
+        <span class="heroBadge" id="badge"></span>
+        <h2 id="heroTitle"></h2>
+        <p id="heroText"></p>
+      </div>
+      <div class="body">
+        <div id="quickModelLink" class="modelShortcut">
+          <div>
+            <span class="modelShortcutEyebrow">ANTES DE ENCOMENDAR</span>
+            <strong>Quer conferir a camisa?</strong>
+            <span>Abra a área de modelos para ver frente, verso e as versões disponíveis.</span>
+          </div>
+          <button id="quickModelsBtn" class="btn secondary compactBtn" type="button">VER CAMISA</button>
+        </div>
+        <div id="orderClosedNotice" class="notice orange hidden">
+          <strong>Encomendas temporariamente encerradas.</strong><br>
+          O Grêmio abrirá um novo lote quando as vendas forem retomadas.
+        </div>
+        <form id="orderForm">
+          <div class="grid">
+            <div>
+              <label>Nome completo *</label>
+              <input id="nome" autocomplete="name" required>
+            </div>
+            <div>
+              <label id="turmaLabel">Turma *</label>
+              <select id="turmaAluno" required>
+                <option value="">Selecione sua turma...</option>
+                <option value="8º A">8º A</option>
+                <option value="8º B">8º B</option>
+                <option value="9º A">9º A</option>
+                <option value="9º B">9º B</option>
+                <option value="1º ANO A">1º Ano A</option>
+                <option value="1º ANO B">1º Ano B</option>
+                <option value="1º ANO C">1º Ano C</option>
+                <option value="1º ANO D">1º Ano D</option>
+                <option value="2º ANO A">2º Ano A</option>
+                <option value="2º ANO B">2º Ano B</option>
+                <option value="3º ANO A">3º Ano A</option>
+                <option value="3º ANO B">3º Ano B</option>
+              </select>
+              <input id="setorServidor" class="hidden" placeholder="Ex.: Coordenação, Secretaria, Biblioteca...">
+            </div>
+            <div>
+              <label>WhatsApp *</label>
+              <input id="whatsapp" inputmode="tel" placeholder="(85) 99999-9999" required>
+            </div>
+            <div>
+              <label>E-mail</label>
+              <input id="email" type="email" autocomplete="email" placeholder="Opcional">
+            </div>
+
+            <div id="cpfField" class="hidden">
+              <label>CPF do pagador *</label>
+              <input id="cpf" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="000.000.000-00">
+              <div class="muted" style="margin-top:6px">Usado somente para gerar a cobrança no Asaas. O CPF completo não é salvo na planilha.</div>
+            </div>
+
+            <div id="modelField" class="full">
+              <label>Modelo *</label>
+              <select id="codigoProduto" required></select>
+            </div>
+
+            <div>
+              <label>Tamanho *</label>
+              <select id="tamanho" required></select>
+            </div>
+
+            <div class="productBox">
+              <div class="muted">Valor-base da peça</div>
+              <div class="price" id="price">—</div>
+              <div class="muted" id="productName"></div>
+              <div id="paymentPricePreview" class="paymentPreview"><strong>Pix selecionado.</strong> O valor final será mostrado aqui.</div>
+            </div>
+
+            <div class="full paymentChoiceBlock">
+              <label>Como você quer pagar? *</label>
+              <input id="metodoPagamento" type="hidden" value="PIX">
+              <div class="paymentChoiceGrid" role="group" aria-label="Forma de pagamento">
+                <button type="button" class="payChoice active" data-pay-method="PIX">
+                  <span class="payChoiceTag">PIX</span>
+                  <strong>Pix</strong>
+                  <small>Pagamento rápido pelo QR Code ou Pix Copia e Cola.</small>
+                  <span id="payPixValue" class="payChoiceValue">—</span>
+                </button>
+                <button type="button" class="payChoice" data-pay-method="BOLETO">
+                  <span class="payChoiceTag">BOLETO</span>
+                  <strong>Boleto</strong>
+                  <small>Geração e pagamento pela página segura do Asaas.</small>
+                  <span id="payBoletoValue" class="payChoiceValue">—</span>
+                </button>
+                <button type="button" class="payChoice" data-pay-method="CREDIT_CARD">
+                  <span class="payChoiceTag">CARTÃO</span>
+                  <strong>Cartão</strong>
+                  <small>Crédito à vista ou parcelado. Débito pode aparecer no Asaas quando disponível.</small>
+                  <span id="payCardValue" class="payChoiceValue">Ver parcelas</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="cardInstallmentField" class="full installmentPanel hidden">
+              <label>Parcelamento no cartão *</label>
+              <div id="installmentLoading" class="installmentLoading"><span class="installmentDot"></span>Consultando as condições do cartão no Asaas...</div>
+              <select id="parcelasCartao" class="hidden"></select>
+              <div id="cardFeeInfo" class="feeDisclosure hidden"></div>
+            </div>
+
+            <div id="personalizeToggle" class="full checks hidden">
+              <input id="personalizar" type="checkbox">
+              <label for="personalizar">Quero personalizar a camisa com meu nome e cargo/área/função.</label>
+            </div>
+
+            <div id="nameShirtField" class="hidden">
+              <label>Nome na camisa *</label>
+              <input id="nomeCamisa" maxlength="50" placeholder="Ex.: SEU NOME">
+            </div>
+            <div id="roleField" class="hidden">
+              <label>Cargo / área / função *</label>
+              <input id="cargoFuncao" maxlength="80" placeholder="Ex.: SEU CARGO / ÁREA / FUNÇÃO">
+            </div>
+
+            <div class="full">
+              <label>Observações</label>
+              <textarea id="observacoes" maxlength="300" placeholder="Opcional"></textarea>
+            </div>
+
+            <div id="paymentNotice" class="full notice orange">
+              Pagamento seguro pelo Asaas. No cartão, o acréscimo correspondente às taxas da operação é calculado antes da confirmação e fica a cargo do comprador; o valor total e as parcelas aparecem antes de finalizar o pedido.
+            </div>
+
+            <div class="full checks">
+              <input id="aceitou" type="checkbox" required>
+              <label for="aceitou">Confirmo que conferi o tamanho escolhido e estou ciente de que a peça será produzida sob encomenda.</label>
+            </div>
+
+            <div class="full">
+              <button id="submitBtn" class="btn primary" type="submit">
+                FINALIZAR PEDIDO <span class="spinner">• • •</span>
+              </button>
+              <div id="submitProgress" class="submitProgress" aria-live="polite">
+                <span class="submitProgressDot" aria-hidden="true"></span>
+                <span id="submitProgressText">Registrando seu pedido com segurança…</span>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div id="orderResult" class="result">
+          <div class="muted">Seu pedido foi registrado:</div>
+          <div class="orderId" id="resultId"></div>
+          <div style="margin:10px 0"><span id="resultStatus" class="status waiting">AGUARDANDO PAGAMENTO</span></div>
+          <div id="resultText" class="muted"></div>
+          <div id="pixErrorNotice" class="notice orange hidden"></div>
+
+          <div id="pixBox" class="pixBox hidden">
+            <div class="pixGrid">
+              <img id="pixQr" class="pixQr hidden" alt="QR Code Pix">
+              <div>
+                <div id="paymentBoxTitle" class="pixTitle">Pagamento do pedido</div>
+                <div id="paymentBoxText" class="muted"></div>
+                <div id="pixOnlyContent" class="hidden">
+                  <textarea id="pixPayload" class="pixPayload" readonly></textarea>
+                </div>
+                <div class="pixActions">
+                  <button id="copyPixBtn" type="button" class="btn secondary smallBtn hidden">COPIAR PIX</button>
+                  <a id="paymentButton" class="btn primary smallBtn hidden" style="text-decoration:none" target="_blank" rel="noopener">ABRIR PAGAMENTO NO ASAAS</a>
+                </div>
+                <div id="pixExpiration" class="muted" style="margin-top:9px"></div>
+              </div>
+            </div>
+          </div>
+
+          <button id="checkPaymentBtn" type="button" class="btn secondary hidden" style="margin-top:14px">JÁ PAGUEI — VERIFICAR</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="modelsCard" class="card hidden reveal reveal-3">
+      <div class="hero modelsHero">
+        <span class="heroBadge">NOVA CAMISA OFICIAL</span>
+        <h2>Conheça os modelos disponíveis</h2>
+        <p>Escolha a versão ideal para você e faça sua encomenda diretamente pela Loja Digital do Grêmio.</p>
+      </div>
+      <div class="body">
+        <div class="modelsGrid">
+          <article class="modelCard studentModel">
+            <div class="modelVisual" id="visualEstudante">
+              <img id="mockupEstudante" class="hidden" alt="Mockup da camisa oficial dos estudantes — frente e verso">
+              <div id="placeholderEstudante" class="modelPlaceholder" aria-label="Camisa polo oficial dos estudantes">
+                <div class="shirtOutline" aria-hidden="true"><span></span></div>
+              </div>
+              <div class="modelZoomHint">AMPLIAR</div>
+            </div>
+            <div class="modelContent">
+              <div class="modelTopline"><span class="modelType">ESTUDANTES</span><span class="modelBadge">GOLA POLO</span></div>
+              <h3>Camisa Polo Oficial</h3>
+              <div class="modelPrice" id="modelPriceStudent">—</div>
+              <p>A versão escolhida para os estudantes no concurso “Nossa Escola, Nossa Identidade”.</p>
+              <ul class="modelFacts"><li>Gola polo</li><li>Modelagem unissex</li><li>Sem nome individual</li></ul>
+              <button id="modelOrderStudent" class="btn primary" type="button">ENCOMENDAR ESTA CAMISA</button>
+            </div>
+          </article>
+
+          <article class="modelCard">
+            <div class="modelVisual" id="visualServidorPolo">
+              <img id="mockupServidorPolo" class="hidden" alt="Mockup da camisa polo para profissionais — frente e verso">
+              <div id="placeholderServidorPolo" class="modelPlaceholder" aria-label="Camisa polo para profissionais">
+                <div class="shirtOutline polo" aria-hidden="true"><span></span></div>
+              </div>
+              <div class="modelZoomHint">AMPLIAR</div>
+            </div>
+            <div class="modelContent">
+              <div class="modelTopline"><span class="modelType">PROFISSIONAIS</span><span class="modelBadge">PERSONALIZAÇÃO OPCIONAL</span></div>
+              <h3>Gola Polo</h3>
+              <div class="modelPrice" id="modelPriceServerPolo">—</div>
+              <p>Versão para profissionais com opção de nome e cargo, área ou função no peito.</p>
+              <ul class="modelFacts"><li>Gola polo</li><li>Nome opcional</li><li>Cargo/área/função opcional</li></ul>
+            </div>
+          </article>
+
+          <article class="modelCard">
+            <div class="modelVisual" id="visualServidorCareca">
+              <img id="mockupServidorCareca" class="hidden" alt="Mockup da camisa gola careca para profissionais — frente e verso">
+              <div id="placeholderServidorCareca" class="modelPlaceholder" aria-label="Camisa gola careca para profissionais">
+                <div class="shirtOutline crew" aria-hidden="true"><span></span></div>
+              </div>
+              <div class="modelZoomHint">AMPLIAR</div>
+            </div>
+            <div class="modelContent">
+              <div class="modelTopline"><span class="modelType">PROFISSIONAIS</span><span class="modelBadge">PERSONALIZAÇÃO OPCIONAL</span></div>
+              <h3>Gola Careca</h3>
+              <div class="modelPrice" id="modelPriceServerCareca">—</div>
+              <p>Alternativa de gola careca mantendo a identidade visual da nova camisa.</p>
+              <ul class="modelFacts"><li>Gola careca</li><li>Nome opcional</li><li>Cargo/área/função opcional</li></ul>
+            </div>
+          </article>
+        </div>
+
+        <div class="modelsActions">
+          <button id="modelOrderStudentBottom" class="btn primary" type="button">PEDIDO DE ESTUDANTE</button>
+          <button id="modelOrderServer" class="btn secondary" type="button">PEDIDO DE PROFISSIONAL</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="statusCard" class="card hidden reveal reveal-3">
+      <div class="hero">
+        <span class="heroBadge">ACOMPANHAMENTO</span>
+        <h2>Acompanhe seu pedido</h2>
+        <p>Consulte pagamento, produção e entrega usando o número do pedido e o WhatsApp informado na encomenda.</p>
+      </div>
+      <div class="body">
+        <div class="grid">
+          <div>
+            <label>Número do pedido</label>
+            <input id="statusOrder" placeholder="Ex.: PA-A-0001">
+          </div>
+          <div>
+            <label>WhatsApp</label>
+            <input id="statusPhone" placeholder="(85) 99999-9999">
+          </div>
+          <div class="full">
+            <button id="statusBtn" class="btn secondary">CONSULTAR PEDIDO</button>
+          </div>
+        </div>
+        <div id="statusResult" class="result"></div>
+      </div>
+    </section>
+
+
+    <section id="adminCard" class="card hidden reveal reveal-3">
+      <div class="hero adminHero">
+        <span class="heroBadge">ÁREA RESTRITA</span>
+        <h2>Gestão das encomendas</h2>
+        <p>Painel interno do Grêmio para acompanhar pagamentos, produção, retirada e comunicação com os compradores.</p>
+      </div>
+      <div class="body">
+        <div id="adminLoginBox">
+          <div class="adminLogin">
+            <div>
+              <label>Seu nome *</label>
+              <input id="adminName" placeholder="Ex.: Paulo Vinícius" autocomplete="name">
+            </div>
+            <div>
+              <label>Código de acesso *</label>
+              <input id="adminCode" type="password" placeholder="Código da Área do Grêmio" autocomplete="current-password">
+            </div>
+            <button id="adminLoginBtn" type="button" class="btn primary">ENTRAR NA ÁREA DO GRÊMIO</button>
+            <div id="adminLoginHelp" class="muted">
+              O código é configurado pelo menu “🛍️ Loja do Grêmio” da planilha.
+            </div>
+          </div>
+        </div>
+
+        <div id="adminPanel" class="hidden">
+          <div class="adminTop">
+            <div>
+              <div class="kicker">PAINEL ADMINISTRATIVO</div>
+              <h3 style="margin:3px 0 0;color:var(--navy)">Olá, <span id="adminOperator"></span></h3>
+            </div>
+            <button id="adminLogoutBtn" type="button" class="btn ghostBtn smallBtn">SAIR</button>
+          </div>
+
+          <div class="statsGrid">
+            <div class="statCard"><span>Pedidos</span><strong id="statTotal">0</strong></div>
+            <div class="statCard"><span>Pagos</span><strong id="statPaid">0</strong></div>
+            <div class="statCard"><span>Aguardando</span><strong id="statWaiting">0</strong></div>
+            <div class="statCard"><span>Em produção</span><strong id="statProduction">0</strong></div>
+            <div class="statCard"><span>Prontos</span><strong id="statReady">0</strong></div>
+            <div class="statCard"><span>Entregues</span><strong id="statDelivered">0</strong></div>
+            <div class="statCard wide"><span>Receita de pedidos pagos</span><strong id="statRevenue">R$ 0,00</strong></div>
+          </div>
+
+          <details class="adminDetails">
+            <summary>⚙️ Configurações de vendas e notificações</summary>
+            <div class="adminSettingsGrid">
+              <div>
+                <label>Vendas estudantes</label>
+                <select id="admSalesStudents">
+                  <option>ABERTAS</option><option>FECHADAS</option>
+                </select>
+              </div>
+              <div>
+                <label>Vendas servidores</label>
+                <select id="admSalesServers">
+                  <option>ABERTAS</option><option>FECHADAS</option>
+                </select>
+              </div>
+              <div>
+                <label>Lote atual estudantes</label>
+                <input id="admLotStudents">
+              </div>
+              <div>
+                <label>Lote atual servidores</label>
+                <input id="admLotServers">
+              </div>
+              <div>
+                <label>Prazo padrão após envio à gráfica (dias)</label>
+                <input id="admDefaultDays" type="number" min="1" max="120">
+              </div>
+              <div class="switchStack">
+                <label class="miniCheck"><input id="admAutoEmail" type="checkbox"> E-mails automáticos do sistema</label>
+                <label class="miniCheck"><input id="admAsaasNotify" type="checkbox"> Notificações de cobrança do Asaas</label>
+                <label class="miniCheck"><input id="admSms" type="checkbox"> SMS do Asaas</label>
+                <label class="miniCheck"><input id="admWaAsaas" type="checkbox"> WhatsApp do Asaas</label>
+              </div>
+              <div class="full">
+                <button id="adminSaveSettingsBtn" type="button" class="btn secondary">SALVAR CONFIGURAÇÕES</button>
+                <div class="muted" style="margin-top:8px">SMS e WhatsApp do Asaas podem gerar tarifas por envio.</div>
+              </div>
+            </div>
+          </details>
+
+          <div class="adminFilters">
+            <div class="filterSearch">
+              <label>Buscar</label>
+              <input id="admSearch" placeholder="Pedido, nome, turma, WhatsApp, modelo...">
+            </div>
+            <div>
+              <label>Público</label>
+              <select id="admFilterPublic">
+                <option value="">Todos</option>
+                <option value="ESTUDANTE">Estudantes</option>
+                <option value="SERVIDOR">Servidores</option>
+              </select>
+            </div>
+            <div>
+              <label>Pagamento</label>
+              <select id="admFilterPayment">
+                <option value="">Todos</option>
+                <option>AGUARDANDO PAGAMENTO</option>
+                <option>EM ANÁLISE</option>
+                <option>CONFIRMADO</option>
+                <option>PAGO</option>
+                <option>VENCIDO</option>
+                <option>ESTORNADO</option>
+                <option>CONTESTADO</option>
+                <option>CANCELADO</option>
+              </select>
+            </div>
+            <div>
+              <label>Produção</label>
+              <select id="admFilterProduction">
+                <option value="">Todos</option>
+                <option>NÃO ENVIADO</option>
+                <option>ENVIADO À GRÁFICA</option>
+                <option>EM PRODUÇÃO</option>
+                <option>PRONTO</option>
+              </select>
+            </div>
+            <div>
+              <label>Entrega</label>
+              <select id="admFilterDelivery">
+                <option value="">Todos</option>
+                <option>NÃO ENTREGUE</option>
+                <option>DISPONÍVEL PARA RETIRADA</option>
+                <option>ENTREGUE</option>
+              </select>
+            </div>
+            <button id="admRefreshBtn" type="button" class="btn secondary smallBtn">ATUALIZAR</button>
+          </div>
+
+          <div id="adminOrdersMeta" class="muted" style="margin:14px 0 9px"></div>
+          <div id="adminOrdersList" class="adminOrders"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer reveal reveal-4">
+      <strong id="projectName"></strong><br>
+      Organização: <span id="orgName"></span> • <span id="instagram"></span><br>
+      <span id="emailGremio"></span><br>
+      <span id="systemVersion" style="font-size:10px;opacity:.48"></span>
+    </div>
+  </main>
+
+  <div id="paymentSuccessModal" class="modalOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+    <div class="modalCard successCard">
+      <div id="confettiLayer" class="confettiLayer" aria-hidden="true"></div>
+      <div class="successIcon">✓</div>
+      <div class="kicker">PAGAMENTO IDENTIFICADO</div>
+      <h2 id="successTitle">Pagamento realizado! 🎉</h2>
+      <p>Seu pedido <strong id="successOrderId"></strong> foi confirmado e seguirá para as próximas etapas.</p>
+      <div class="modalActions">
+        <button id="successTrackBtn" type="button" class="btn primary">ACOMPANHAR PEDIDO</button>
+        <button id="successCloseBtn" type="button" class="btn ghostBtn">FECHAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="publicMessageModal" class="modalOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="publicMessageTitle">
+    <div class="modalCard publicMessageCard">
+      <div id="publicMessageIcon" class="successIcon" aria-hidden="true">!</div>
+      <h3 id="publicMessageTitle">Aviso</h3>
+      <p id="publicMessageText" class="muted"></p>
+      <div class="modalActions">
+        <button id="publicMessageClose" type="button" class="btn primary">ENTENDI</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminEditorModal" class="modalOverlay hidden" role="dialog" aria-modal="true">
+    <div class="modalCard adminEditCard">
+      <button id="adminEditorClose" class="modalClose" type="button" aria-label="Fechar">×</button>
+      <div class="kicker">GESTÃO DO PEDIDO</div>
+      <h2 id="adminEditTitle">Pedido</h2>
+      <div id="adminEditSummary" class="adminEditSummary"></div>
+
+      <div class="grid adminEditGrid">
+        <div>
+          <label>Status de produção</label>
+          <select id="adminEditProduction">
+            <option>NÃO ENVIADO</option>
+            <option>ENVIADO À GRÁFICA</option>
+            <option>EM PRODUÇÃO</option>
+            <option>PRONTO</option>
+          </select>
+        </div>
+        <div>
+          <label>Status de entrega</label>
+          <select id="adminEditDelivery">
+            <option>NÃO ENTREGUE</option>
+            <option>DISPONÍVEL PARA RETIRADA</option>
+            <option>ENTREGUE</option>
+          </select>
+        </div>
+        <div>
+          <label>Prazo previsto</label>
+          <input id="adminEditDeadline" type="date">
+        </div>
+        <div>
+          <label>Pagamento</label>
+          <input id="adminEditPayment" disabled>
+        </div>
+        <div class="full">
+          <label>Mensagem visível ao cliente</label>
+          <textarea id="adminEditClientMessage" maxlength="500" placeholder="Ex.: Seu pedido já foi encaminhado à confecção."></textarea>
+        </div>
+        <div class="full">
+          <label>Observação interna do Grêmio</label>
+          <textarea id="adminEditInternalNote" maxlength="700" placeholder="Não aparece para o comprador."></textarea>
+        </div>
+        <div class="full miniCheckRow">
+          <label class="miniCheck"><input id="adminEditNotify" type="checkbox" checked> Enviar atualização por e-mail ao cliente, se houver e-mail cadastrado</label>
+        </div>
+        <div class="full adminEditActions">
+          <button id="adminEditSave" type="button" class="btn primary">SALVAR ATUALIZAÇÃO</button>
+          <a id="adminEditWhatsapp" class="btn whatsappBtn hidden" target="_blank" rel="noopener" style="text-decoration:none">ABRIR WHATSAPP</a>
+          <button id="adminEditResendEmail" type="button" class="btn secondary">REENVIAR E-MAIL</button>
+        </div>
+      </div>
+      <div id="adminEditFeedback" class="muted" style="margin-top:12px"></div>
+      <details class="adminDetails" style="margin-top:16px">
+        <summary>🕘 Histórico do pedido</summary>
+        <div id="adminHistory" class="adminHistory">Carregando histórico...</div>
+      </details>
+    </div>
+  </div>
+
+  <div id="modelModal" class="modelModal" aria-hidden="true">
+    <div class="modelModalInner">
+      <button id="modelModalClose" class="modelModalClose" type="button" aria-label="Fechar">×</button>
+      <img id="modelModalImage" alt="Visualização ampliada do modelo">
+    </div>
+  </div>
+
+  <script>
+    const PAGE = <?!= JSON.stringify(page) ?>;
+    let CURRENT_PAGE = PAGE;
+    let modelsLoaded = false;
+    const BOOT = <?!= bootJson ?>;
+
+    // V6.4: previews minúsculos embutidos para as logos aparecerem NO PRIMEIRO FRAME.
+    // As versões completas continuam sendo buscadas em segundo plano e ficam em cache.
+    const PREVIEW_LOGOS = {
+      escola: 'data:image/webp;base64,UklGRhImAABXRUJQVlA4WAoAAAAQAAAAbQAAbQAAQUxQSP4VAAAB/yckSPD/eGtEpO4DDiNJipudPflf5x8wcKAMIvo/AZpy+Ix7TiMBq724uFQF6sc48PkkVQU9GZvkkyS6qtKxcUjVJFW1MZ2MR7JWzw6ABPB+XxtaA+odhA6jJCQhgQ583ho5UZrTSzIwSQbY0XrCAPySKI2/Wtpl5Uiync5P8tteKNnSz7of3EgiAf+GdgEWIz1phzu20e3whv//einZtr2/v99/rRlmmCKH7pKUBgXpsGjsRHbEoLFbQkx27G7FncYuWqVUmp2UUIduGGat///3fbBiwuM4zvNhREwA/x9cikKTEKsqcUSD/xmKVsSAU6WQIpqEuH9K2VDgNC4aOFXUOeKHqDcqNz0aDdS4o6v/c4p/vOD9VsvHqeIU9QNV1SCaf/Tgrq0bt2mpV28iyZZb55dRg6Kq3pZb5J8R3lmNog42f/HZhhaTL02w7sKRr5BsJ+w/ACQQZxJpAkURC+7ziTsubxmxYRsqtyd0V+BMgsD7UPlHGkORqzoPf9LjJBxIECKhcqZyYOSfAFJUsYHlm+tOGQcmGE/Svnczotb8E5JUjREkCdQPreh9XtUGPXGhZJwZFrLlwEoJk6SSDDASL3bvOYvhRxOQdKCXhxe9WA1syUKSOXPAMyKmVA6gybCQMO1UKMz3DNejj6RhS44IQuLAfnVl2MXkNus3RJJw3vawZb7xC4HzL0j9W3VjD4yUEKMuVSWZb/qKEr/zTDQBSF+a+5bCRvVNHtfzqk9gpERYst6fscAmAhXjYkRMtGW+agInA+aPxk+gCVRO1Mncr9FAPxArJcCj6WvMEUnGkWQ48owJEhiaHeqEJkjS9+5nmkZdRKdji8+j21FAKCLDSCSBUD6DJJ85nsBxNHSvRtVFtQe2uDyuPKu8mZnlktFkRB8+LhoPMg5HMjVGuaniFxrYGN/7L7PUV426L4vNY1BEDw6FshQROLUktudIIdaZTxiqvgVVylZ9MhAFww4PKRZLl3xdWYeQlDPJuGSETJKNBKWIa/13SftDhQAOhffsMgrg9oSKx1D/oM4uhSdUSEIJkjFBRwIvnsrhzDJxAu9HwkzRAuDb3dnniRuEnsJSjGKyN+l7gkXITQI0CS/CRBI7WV/XqCH2NcI0D0j5tjEXV0Vjomkb040Uh+UdnY0xACLJiI2ngc/LSCLkqyEEFlxo/2bEsMJOpPZ1ZRBAIa08hmK0dNEtmWKIQ7L5BHHwOj6AklBt5Md3EcDJTDzxTNrJii93IxBwLsTeCIZiFBNaF7TEAggiiQyth0rgsGmVGoIjcRB6PW0ARtWl8L4BaHpvL0A0EMtfC/IoXo+h+gAeCZNqdDnWEKsulChIOfzUYxR4nhg+Bj+l3xcOfBM4K6x+YIaixWPYshYrCYRkNSCuiCHJcHRghdtIgfWfz8Q07T8AiEgKwrmvJ5EzvBTFa+mkTbGUUFXOX+9t4cTqhQug+ZO9DEQIh+H4opnLaP5WH3qKLRaPj+bgUSLVOY9do7jxxce3k97v1l6AQhh/83efb6Xh4zeCBvOD4hH7W0sxRaQJFFQxBvLe+Rnm7ew+eGg74srJDT8t/pXwJdOuANRZE6kvphiE2gsQkhRJptAnln2wNrtfi9Y1sol7cNe6NavzCLW5b1ALQANjDb6+jC0Gw8VP4SVjkjp70hgDQeCfObJ77Zo9KZcu7A6g+3dt37Jpmw+1hw7rWA/AOWMtgHUnKiJFZ+l9HTYpk8j3XpkYdiIxEanbpmvn+rgdO3dsX7cJyOkw9Irm9Yh1Tow1xJeo3oNXHP1aYpKSZGaMFiU21PbC2npg71+HTlig8SONG9ZOJa6PGGtIOtAtnhSdUCeLpJMBozaII16EZBvPV9XAd4gREksiYAy2yAqfHEpisTH+DdeVmlEPRh1XpdCSyDcLi0UK4RkkgQsopA1GTwf9u5JHlYF3+hhEjLWeJ0jQOAm1kTqYoiusBVRjApNegHMxxjU/8rcJsv7ICmy+jiFMUaaj8QhkGl5JMYCIg0B/7wTYGMuVcwhTM+KcRv3nCKUw/Dov1QOMRgmregUTtCCI57wDGUgJEZSzh40f6HNk3HhrXQTwwjV0DF76Xi3wz+sIE6a/XkKsKHUj+0Aof1JV4qB6I14JMQR80n63Z7+n1QHV/Acxll4dzF86GgZGVXVJJtyvp9OatxTBXfBau2DmyAiGT1+eQhAn0F/ElBD1fffH7pbzdreQr/V8VLUzIX7tyldOX0vlolc/uS+d2l+prqL3d3hB5rqaijww1QtsBl07BqgCgXbAlgRDK1W9p9NI6peV5dGIFvgjLRO0NQ+687qmPbHDj2q+e4aLdCimj0Y0EplLyKN8g+GqqjhH4M26pkQIZYcP6lk1/MczwEjVQPVi+geuLx3URbVgUi3qf6nqB9qHK92xRrRRP1Kg91pos7vxZUt+33M80wC4+phiE0GE2Kt1zeUwNk9P3MkdBVEdQ6ld6qKq9QceVd85PZgt41R3NuBFVf0hTOVp7hsxmLQKZXKr165Xu97LeMVkhGS/V10zNjezYY22X6lGdD68qAXBiZrDVH3VqPsEPtUCPXQjXcZ2o94zB/V0LklnZ1D8NtfzJlUqnZGW/fHzGxtB8NuOpk1xgh7JkbYuqpcM0qgx4OtgyfhbXaC66r2tdQZHVPWyspPHHz929MhWG1ACLUNWbd8anqbEvWnRT9WJ9fHA16HIIn21YuA7AacHshmkvqoLFMD5eld4vSrAvU/fLgMbYopDPCNmo+qtPP6i79mwlcioSjOali0N4JzxdSlyZVBxofoK+Po0fKe+BtF4evZ2PvQPHVYhdKjBo4/q3xlipOhim/n6uzUkXap89fqNWzfLBj+iXcgZ20EDVVDO1Zb2gR91qnp2/65tW3rWJVy5cqWKisBxXenrlYAtIpHMB6bJY+5kIyhVIS01xeL8/HMn8omt2P6yXqpupQnzGgFAIB/Dd76qrnuiTw2hCFsH7mWpGUaKxvKePs5mPf3hL7uPngJVEw4Zzh/ct23zxo2HoNTgL50+iP3YOkAJWnCDat6LFwFIja7Dp3781eJUz0Ui+fnHDv+9d/3c6Doe2v0gUhRGGkRP5zTXvJ/mPXl1u5on8gsgJbV0mWr1ml3YKJWdX836Gdp/oVfSqACFwHxC5WjevVmQ3mPaylOqp7cv+vSlUwU+KWmZORVyK4bPq9bNVW0itggsr+tnVKoFkN7k8soVymSkcvZo3r59e49TqVO/HhVOfnQJXLuuKc+ZACX/8syVb6dT+uZvopr/7bhWaUA4O9WKf+60AlTsPnLerXziXqUIjDTIjzYhvflds3YGqgr5Z89F1IRTw5za9+uSVX9Xvepd3eoodVX50n+4IKr3pk7tS/03orrjgQY2s92dH/xeKSuVhGf/2vb7msoAHfRUDTGFsryje55Yo6qHl7814apu+U48a8WIqC1VuWbt8ufWfJF+Q3/d3oEcLtOIbjDNMnNm6dlpjbI7T/7ut+WfPnXX0fxIFM8LpZepXKNmnXJoweJxTflOX8AWxkjtfNVjc8b0uLBN35HTPv2pcnZamLjBmWN5e3btP5NV67of6gz8UN/y4EPNbwm36olRVZvePWPaHUOG3vbwa/PKpXtGnX/m1KG8P/88Eil1/fTVvu7f6U7kiimE5d96fEzXwZO+3BXRWAp/8ve19pLm72Z22rmzCmWPPYD5jz5fpcHg224e9vjCPRpL8sGBXa+M7NNlyAtbfZ2Ml5yRqiejxzcGqsR3+WdOnjx1LqoqYlNLZ5Uvb4CDK9dfAVP/bEDLlOy1v1Sm5YOvLjmuAHomgghivbCNE//0tpXr73aHyookZXlRY/2Dh/Ly8v7++8CJiFqSleyqdVu0bpkLBb89WmPA/CqE3n44a9CCI6qqf2/ZvP2PvyLqBBHPS8spn1upYvnc3HKZhlj/fHAfXjKGuqf2LHl91KVNyghJikg8VSU2p81lvVU1mPPCk1z56rMHVDW66onO2RSxVya3cu0GdWtWyVI9lYUkIeQ2TiW+MYAqiiNJQUScg9Qe7xxV1eOvbfdVdeMjzQCMQRWNJwgCqo64pkK1ayZ91wWbRFzjedYIgaPoxXpA9Qe2aOyJmZeFAc8KRSyICM4Ra0lejFBIK/jGEIgEYn0rBAjghcOQPvCLk1seqA0StmKtYAwYA2JARDVOQsEIzhWiCAMloSiFNAA1AI+EAghgiC+aVPFKPHEDmkVeaNE1eL9ik09Sr/1kUFkz30tD6DuiLU1u7CLUuakxGV2uaBC+qFcDGnRJpXlrS+12kFH9zF4whXKFEVRQEhqGrVjlXb9vkVw8ZlRvrdRzy3ebrk/B2k1j91b5YPIPV9df8cCy9u03jbu40+aHuzXbObXM8N/vSb3+x7fnPnl/nfp3YylWIePWNBsyQcR3aOB2fMtJa4gSPhdesXDmNw35eA8VTmPtyme/zXp55g9N7n+YkW/W/+/02u3Xjqte8flHK3f+6G5vRVMW6zHVyYTapCOIxrgg8IMdSBJASAQRRETQqODKl//rZGZpF/2s7m9vNjRfutOew6Rs7pvGu1PW1mrx070rO3X5vl56z20Pdix/85ZrGtx9supjb9+2en7XnI4X4fUvY0MmFDJWBFxUZxemsMK47Au8V493TP/KraZWiLqZvK9g24M0pHET6t92AZUvhIq339U+7fZhUvfBy5FbnqjPidm/DsZQEo1xDkFFSNozxFqwFhBiQ0AYhFgBD8ACoSggXopoAGJwCkacXwiTGgSBgihFacAjrjGACEXrkdgjrihFbOn+ftSdP7zyhYN0ey5Y14KsL1c9S9rMxYPaLPquC9bQ9q2fV312BTGGTq+/8kaNpi+9MtFI1ccmNb3tkftGX98Mho4adbcLzi+g/C0PseELR93a/H6YcMfwlj8luYFziN180cm3b0Xvo8IZXUTOSZ1wuepNpDDI19h7seAxU1XvLa+qjXhaC6r9pbEfmb2qClRrvl8Vfhn61zs3s7SLVPvD3DfNSwZUmTF3eUSHstffGXxLuTPBGTgVnA+C4BzRjGl69pERBwK/LkZI3Rs5GF3Kk0EwNnTI3cO26J+v73U64KW1x6KRP86Ftqk/b5GvX2rg8msGlDvrfJIWLOzeP1D9sTU17z49npkVsoJYq8ZacJ1wX8A01ZF4lja6/xE9VabCKffNbXogx/xXV3OlRmfAEs1re26kBu/C5iDIOWuMbbstwzOSHDFp3odR7T9Cv6vpa48UC4hBBUSpr/qC9Uaom4rn8aAuaao6hJf1ZJ4+ROo2/ZXbVe+DZSrQ2OkgwxuqDSKEQlkahHCFEdzEEap/p/2ob2X/pVM9gxFrIAZC6FThVtXpeMJP+gJ5+gZ1zqgeKiPhnXry+3OaV11YoSJkqQ5EnlVND/h5m2vLSYLCgJYzeXMb5kbc2SP5uqbMEf0Ka3EeODheRv8tZoy6SYSpcz7Y+vkx3ZbCf9Q9ignt0jOqBS2w/KwCvtMhnp2uLgq7eqlusbhCqX3inTIwTJ2quvMtdgZbpYqvp3MgJ9DFLYNV8HWgQ0lhmMY611Kmq14mkrJbv5mkOgaPVYqwW3UaLHK6L5WyLHXq0MII5EUJyWf6e5sW/1Id8L4Gv+2F5T2dP/0K03mmBt/PjuqeLPF4L7rtlptnRKN3MyMavQxJ3Rn9vsLZ6IFM4eeoHzA3cMdvmnhed+zJDETa+gUacoWJKiETJm2PvggZx/XtKhtUcVNpilcqHen/i6rqrpZY0o/oS5Cuuph3VftZm3JMt/KZ6vOwVbMD2TxGYyO9ybSl4BMFKUxazRqlEUKNGpe1Vhq2b0yo38PjL0Ryu3Xv1bN3FezgGa8Mz8aIZNx8W2Mv5A27/3p6PPBgLfDGTfmXXPDcvx+ycs9bUyyWPgt2bPioHYz/4Qmk1poN/x2ETa4IhVhjiC/ENRRepk+3gJC0gRQDhsRCYcUYiTFGAGMNtlWHC2tBqEadGjXKCWJTqlZNQ7Jz0kqBIDnZIUyplIbP1cPzDHgWBEIA1oA1YIwBEYpfyDquqsuae/sLVGdjPUaeOTsbu/romUNfNTMy7ODBV2H2jo48ubEdbdd+mRJ+cl3ejwMwxIqQtBSZIAigaFSf+UF3l/1TP5lxM8awWP3TZdius9boL8K3GhxMZZ0eOdOEv45n10lZ+jr5K1V7YhH+iSJZ7NN+m12/6qUwlI9+PVN7s8mVbuX/bbPOL/pGO7A68AlCjqg92OCioB/PuXlYSqaklqlcr03pzIyQMdHPEWhmVgWjN6vqBFJlsF59pXuOzfrqIvcK/fTqEe4JflVxFsXiV9doHXONrhOys7GoOt93GhgxrmhAxIRsKD01HJZdqFKJnXrzVn1yZENCfKQb1+kms15P6/awvKs/LNM1/KwFOAN+KEjF1ZJr3G+G9l2QoKAg/+Tp8+fPAX5RFTIjL7jheT1YdY9/ec0qQtqf0T17zhbUXhod+lf+JewJ8vODsznfBOPLbNB2dkR0W81zwfW8qrOwlGwBQUk/oarbutp8Vf0OLtXFsFRH/6LNpumabrosI2ubDrhe1dc1uX+pzuEJ1S16vpNYMfEUUECLJ6G5uFe3tqmErhgyYHA7qHdbE+h698WDJpSpMHZk9we7wIBpXbj6w7mPlSs1b/G0TMP189a+1xrhn2xIVkheBBCSFWIN/1RrrRWwop4B8QxYz1hPxPOMZ8B6BmutJ1jjCVhrrKHES4KkDfFFMEJiIbExxIolsU3OmuQkzQvHGDBA2GAMIsaImBjBWIMRAxasFWsQK2CNsUZEQDzBCOIJYkUsIiLGYQKDA4wkEMq8ueh6UtKIDZsRoxAKmfEw8aum07MNibMMCeu1BgR6kPhiEopCp6YCEg9Dq0/N8kE3vdztw6f7ftR15f3jZ3b8+Lrn3pg2odyMvlUu/jDjBp4d1pkrq/QY3vzBNQNG3dTo4cbUvb/u5zf0691qUJNqdWs8OKD67dVp8NDc6teXI31ItYx/LWuWU7XUwKWhmoubVVz5ylVcWg5J1Glh7qqaUxa9MmzSiPdueejmfw/44rUG/75/7AtXvDXz8KpLQnP78ckX3PDx/U99MGHKHXf9cMenfeWyrx6b2u7bSwZ8P27y+Mc+eu3xma3NzHFvXPLNy8zSD5965NO3Oz8+zc2qcv+Cpku+mj1/4ksflxWJI9S6o8zEqh88c3PnAb1evXNI7Unv9hpefuTAK4ZN+nrKXyu62eZ71/eZQHhLm1EjX583afbsPvOf4aNdk8a99lbV79Z2nDWq77c3dlxwJ29MfuuJRR8yf/kN0x+f9eKn772wb/vI7J3+2623rpk16svaxCtkCMBiEWMM2UYgqHjUrwakUJrK1W3N8qWbpZDTonxW66pyQZtQ2QwuqpHdJYsyV9So3bM6ab2rZw9rlzusTeYtS8tlL7qz7cSRfSo/2iEkJBSDERFBBBEBQ2EFoTiF4q1DyZU4AgIIgsRiBDEiRjAGEayIFcSKWEGsiDXiGbFOEBDPimdKxP+Mhv8/DVZQOCDuDwAA8DYAnQEqbgBuAD59MJJHJKKhoTT5/hiQD4lsAL57nMRXu3mn2d/L/irg06q8yHovzj/7r1Ifn72AP1u9OXo6/cT1G/uF+0nvB+hn/GeoB/M/8361HqN+gB+w/pyfud8F/9y/7v7d/Ah+zf//9gD0AOFE/kv4geE/+c8G/Hv8PlPNAGRHya1AvZHmuPyui31PoF+2303wOdSOT3/wfDK+/f8P2APzX6rv+H44vqX2Bv5p/a//B653sY/cX2Qf2T/9zwmVETtmnCW3BpY9OtzduZoE0BJl4JXzbsQSoZ1tGx7EAN1l0ne/nRJq8IZ1NSeh03jK686xrLqBYqgWqxaje6T512fAVmyERn4caHerYMDj/1B5bq1moi2OBjn/qYvPGM3kbOCD/3by9qLhvSba0j0kE2msoQNUw6CnVXNKuNpV4cgJAIOA3IkqbDscOYMsTbUx+/off+u/80ZemLn42pv9I2dcc9vXGloay7G03E/eZEfIXCtXPq0mtor4jOzy497QjDEnt+WdxRQ7LNSpEO+tDy9Mi0oh1S2s47GL5eB30WTWRXtgKl87yFCuY4b7v26wK7GZhDBR7/PIbGtCAAD+/gbRdigs/2PqIfKj674oFM48hKDeIVMSE+0tB+KmQBzkRYlppw3VQa/hOB/j8r9MvPt99mvkdX4ib5do3lNwLpjCpPGfnoNZoEdwM9c5gRFbCjHnjDOlQNcyMF5+yXFEjGhAfjn0BNIeyOX60vz9vhEgrfl82fFVu/72GlTNQlO3w4ZjR9YEY18ckGlO7DUKCLChtXv+oxcJl7zpiUhE4HCNDunOuPBC0fTMQgNPxBhZ+7+nPMCUoxb/S6dGEUpjtACQqL/6fw7FQqaNnAjtdBB2RQZpopTwwfEFE6/Oocvazg35gomvLfsWsCIq4ZAlW8qeZRf0UMiLhKKN/dhT3ih6UF3me+nk/Ox3QYnBHgp7IMWNVs1GUaPBsIfYiVUZ+h29DL/l5svHrueIU1yq219lqd0Wx/u6XP24/cQHuIfGXlO3wSe0tBm7BrWsI3zME7aH0qJtaIU0hlN/tA+CrAlGSqa9fG9OEWmZdNVaOsNTuevs46RZfNAhQag/9NfZq3opzF3S1ilmAnpgfJMbQstHmT97Pfu97WF952voQy5xi+dWI8tgAqP2IPPs5j/9wvEG478wB/8fY2gK/oE3j/Jhna0E1pUVikbW6qzarxXvGEbo3wDHa393XWWwjjxP7H7l79ZLR9nwFW5TVrdm9PsZNQQtr5gJ2D93dFItTUi14+usUXQaTf0A5hTziZZaciVXfUxTB3u8yxoRE6xE4o4ovw+edkxiFvnAuZv3SoocuHZpPB8rErsQPgtK6Fj84jbtT2MSfvzMTWvzvxl9f4vMMsdvWuumZDHobxNgTv4tFgzvPqVa6rolrd6rsdXb4UrMS0D2fYTdPXa9eEi8sO4gPLIP6xiETW/L/awdjszgP3We9yYl//mcL3I29IxxoLuKq31Ze9g9hhaYlclxSolysED1zXir4fuj8oIWKwMUf9cE4dUaCO7tMDC0g7Rrlwrnv2DDADgdiuEBJQLspYR2OzW/xiz0PFPuj/arCOUcfT2a6jX3K0itqDxiCUZUAEr+jFNiZC3z3lM9T7T8wX13t1UvqQvXQzXoWQheFyQTVNRZNBsKKVgbne5JVN0weuWhgjsrXNqRBdB17aBkT/9EnLtfpAPdk/RKx1+VQwTSMarStqjFGANNuQOkTmTXkwQ+iyAzRWUwWrfuvOvkLWtA52jefshCU1yhTQDX8G0aTn3mJJ+aMQPE+dhFHLp7L0K/RkgjHNHW614Bck3AuXDn+xPUMJ1uXtPKd/xCTuwVVoRE/5eKbWKxMdNQe/rugGC9kkFkucpy8yIpIEc/YY8HosrPrmUycukdx4DnEQ8SdDRmAsi9S+XxTs+knroziua3aykRRWEA5Xc5Xi0oq8f8QtT5dWjfICHsJZc8nG4a9CcR6G1XXrzz0g3KeNTr0Mw06fpS8wHD3kwdiIZxQHXkVLgdGO62lJV3eIivXzk52ALDxCm7WTSo9zWV4jXWo735iivAf3aGRXmGt1HaMAKsNmGXN+Hf8P+nFysAQQ58i4G/ztxjdomHB9l7zrbkZb8lMU3mnddSReW2fxVcN9JbHDUCmADHVstS//Xjt04VF4j7AyaaUit8fnaeXITNrp4ylSqDHYU+AJEve03iNZuSbXBfO5JeztAbAlDPSidgY2MddI4xMMhWhhkd+nDD2jaq7CkaWqbOK9tU4IKbPmhPC1R1kH/uQBinNDZSIoSVbW9nq8+QjSflvID2UKMUsHRX3l0jQwG39e0AQbAnJUfm5sy+UxewpuJZYshDzYLZTwZEKKwl3OxpKy57ms5Kgm6NvyvQme/K5Iz5HgkJ8oet+Q7ePbGd3dQJ297mghNXVYanobsNrFA9w1JOtYZ4YYhXCnOu/4rGnhQZf7Pc6tUZQwHgIubq9epDm0Hchy3U+EnTcFkeoizmAP5/SufE2vLT50f8bR9xHKGlnb4eCBGH/kF7U5ZlCWriJXKdN8knex8fl7ONWLLgfu/6CeAtKRqFFEevFqWeQ4HBySZo/OGhD8FonZZ4iAl0K64lpx9jxslz4I0ywmREOjK8FMzRdRRjcfSNva2hdcbTVEqXp7JbwaG/xuTJKca9zSdQjdR5CLY4OYa4LkVYDGBIvv2IhlkPYb2VmuYcUMFNZ2yS+W43eXnSvfoXu/l8Ka+hSvjsn2qoqWRVpcNhXQJnancO9y4D3ezPnCbG34I/7S0L1kQFspmBZiRYeTJNw7KrmwPkFs1j3SS+pJ9Gd/43pHXOirCquk9JMxjo/11moJsgpNIaJumfNf+mkgdFnVJrvey5hsxwMornUYD+EnFjGmE3YVoAW/DLkDSz4DFOVATZ4Ghd+Vs0eZ9ZfxfzqqFa4uiNCOjqMjPLmCnVS57J4AgBjAipjPmFtBq9qwl04gst8ut+lv2jJiD9VO6zvZqetTmqIKLgHftyg/IlPO+M6v+y+akFGvkKgDe+d/mw9DvmxokZGy9yEflE+6Ze27jyV9Y4ciBdlL/hcXnEuZm8eY+YEr9g0l7XRuaBpo3toz4fDxB3y3CJvbIEFT2wBKarZZWq4Bpg8Ka263NeZjX0RyDxpncGCXpp1E2yUyviUr8B8JK5EsDgpyVu6PTJdWy58u0RLrQ8LwZZFratM3hDveaAcc09b11o7ARauCdvgImJT6JCDRy92zamgaJOZYAWxgg7pI0Zi7oeocbTVlNtPMXgXheQ6FAorxBQJR7SrV6W/4fzespWQsV3UxcFziJfmjiuScYvhJ5UIuuxyPXZi3Jm6bjucSugNoUfbjwhzLNu4GbqX212W2NbikzyqeQCR72kIRteiQsxBL/tIwNA2RojT4W91y4wWlClH2tKoab9Wi2a1b3FzebBqusZgB7DFme4gw7mmR+FUrVbiDRWM1QfmKA5jAjHbxaILInAcUBDwgOoLmuVj2c3fUOnyyyr+ujvQmmtdMrsbBoM5jZnxzhon93SFq2exN0QWKip3wBncDrofZqcQNkU32nEEEEyTFpbZWeVsg6X65Ppk738U+qsFUpI62pJbwThq68H3mXl/A3GxX6jSkuVfl65wJxW0ECTHJcI88kkYNq8OyFRDoGy6GW3dR4SakECMmW4biskPVOF+c85MasZ1TuHUThpumM7NCNLAlsgZLrecKXg0OO1i34JytrUT3V2tonfu9kpYK8PMEbzBt7+L+SBHACSJarvOr4XrMFWygqsXa5rxoALDzL0V0BMpENOTotPssvCYUHD0CydSH5SoQYTf2oymYmFfj3oUG8TXFi1kAi0JWBrEBddNpcE0LzGR4n/mGuDRvBL7Bp3uMGKjmdPIVSX3VKgqOQDFN7x/2MXuVr06QlJUh2F7zXUegiHjR+vKCAwGeUcNhVOvPa5cUYDT6Sef/2e887xxhF1DSLRUMwB+cdeH9vHGy3uA9cWFmxrnwpszSClK24PrXSMFmzR/qMl6JQ7B/WHaXrDQ59CJWCNxvi2IpLs8NfIwkiL8pAZcae7yador8URlVMTsZR6iDwiqSP5PjWyBGkGsrCQ2tJjSrCj4OmrA3y1ZQPWGxcM1yzt8tAKBGBmM37kBUF2HZnqop0Goh3jh4nNpHTOfDEElH03fWIVuLvGE8mRsw8HB42pckic2ASXAP1GZXfAcwCo8zN/5GZRTpDp+IJEBbjWkv087tQ3aPtY7JsP85BU3aRnQ/TAmiposxtH0ZWlA8rAg8ghFPM5Fzd4UcGg89YY3pzR20gEeFiMRC9fd9LITkeg5clXblSOYQ4d3bz9slUcXqAQVUnII2iSxqqxqjLQD4mUId+EawtlIrIFeft+BuMqTWbhYZgt2y93ROtP9hpQPT1aIGJBXD7ax7GvSqagaqFBl3Q80CV7LTB8x8+tSHenD5dCl01NhmLT2W+rVFHKA6lvA1h9pUNUAghCtjE8fWJ+icS4VV5D4bKMFRSWN9KuSXX2rUff1MM8p6M3QDzCONLxv3PnnTpMNd5su3dIdGrz9OrvxvxMH4hTRoAqLQ6omcbltd6LbPXBtgpF4w3clcFTednmCKVk0AaImSxbV5E+9r/2NiZkvwLe3+v+Xz6eBTSyXY7+4Mh7M4bhJ1PNavwHU8b/+rAUk63Fg+LBzXx1sH3Q/TnFz2dyrxtMBx16ku/GkbcIkVkum9zZJ4LHF5iJSL6DF8AdK6/Q2yB7TNo4uFK84HbY9DIQAwaCXfXmFSLHRuEjVR6and6wZhiHO7xoqJjtIbYz5+7/NUyBZoLTgBZ6xpjMch2WRJYjJie+/Sl+X00aWAeWv9hPTL5KnzQ4s9+NB6bzhGjOr3BuOfqTq6G6LGN5BLdCOSfSdXZAGtcKvC/FfLw8wyNR8jCiyZP5CCG/NAuQEbmNPAR9NKLHvYXh18qk57TOXdeSm8XeJ6wnsZW11GzG033y59SlNRIA4ZiYSj7rd6oehQhmxLW2SBct2t8bQt/x4vlyrhXXhW8Goy8IZef1c+jWBxTgYZcPmzJm116wbCYNeu+cZ9UgZBQ5L4PZ/4qA16ncJggd9MbNQvB1QA0MmKf5LsZiT84/rAzoLRVEPao6Hnn4rpVghiqOrJO6cPc43gbaLc+8s1nRIgSPNxUIDf9QVxU5YdQXibpdgs0g+o0ZaIyc/ZV6ccuEJ2JbMshuz4SA3dKFbJr99h7WCP8DG3LXHvli+NF4vkNMkYYU4GRAfylFXOMArQGL5nfE+p1lNRH2FFBtz4PNB+TFqfw3ivbaqoQXXLoTOjRsYMRU+ELcHqW5i/yADLlSQkdWVCO8nvhPWrsHsDbXNNCWDaAS51/4SeLj6wkvEwN8mq+U60b37IMye/FzsKdgAl6RXTFkiXmrEy8moTb3Q6OyLn6vP+AAAA==',
+      gremio: 'data:image/webp;base64,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',
+      projeto: 'data:image/webp;base64,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'
+    };
+
+    const $ = id => document.getElementById(id);
+    const money = n => Number(n || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    const ADMIN_TOKEN_KEY = 'camisas_admin_token_v4';
+    const ADMIN_NAME_KEY = 'camisas_admin_name_v4';
+
+    let autoCheckTimer = null;
+    let autoCheckStartedAt = 0;
+    let autoCheckInFlight = false;
+    let lastOrderContext = null;
+    let paymentAutoWindow = null;
+    let paymentAutoRequested = false;
+    const AUTO_CHECK_VISIBLE_MS = 6000;
+    const AUTO_CHECK_HIDDEN_MS = 15000;
+    const AUTO_CHECK_MAX_MS = 10 * 60 * 1000;
+    let cardPlansCache = {};
+    let cardPlansLoadingFor = '';
+    let selectedPaymentMethod = 'PIX';
+    let adminOrdersCache = [];
+    let adminSettingsCache = {};
+    let adminSearchTimer = null;
+
+    function safeSessionGet(key){
+      try { return sessionStorage.getItem(key) || ''; } catch (_) { return ''; }
+    }
+    function safeSessionSet(key, value){
+      try { sessionStorage.setItem(key, String(value ?? '')); } catch (_) {}
+    }
+    function safeSessionRemove(key){
+      try { sessionStorage.removeItem(key); } catch (_) {}
+    }
+
+    function init(){
+      console.log('[Loja Digital do Grêmio] página inicial:', PAGE);
+      if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+      document.documentElement.style.setProperty('--navy', BOOT.colors.navy);
+      document.documentElement.style.setProperty('--green', BOOT.colors.green);
+      document.documentElement.style.setProperty('--orange', BOOT.colors.orange);
+
+      $('schoolName').textContent = BOOT.escola;
+      $('projectName').textContent = BOOT.projeto;
+      $('orgName').textContent = BOOT.organizacao;
+      $('instagram').textContent = BOOT.instagram;
+      $('emailGremio').textContent = BOOT.emailGremio || '';
+      $('systemVersion').textContent = 'Loja Digital do Grêmio • v' + ((BOOT.commerce && BOOT.commerce.versao) || '7.3.0');
+
+      setupLogos();
+      setupNavigation();
+
+      $('envBanner').classList.add('hidden');
+      $('cpfField').classList.remove('hidden');
+      $('cpf').required = true;
+      $('paymentNotice').textContent = 'Pagamento seguro pelo Asaas. No cartão, o valor total e as parcelas são mostrados antes do pedido, com o acréscimo da operação a cargo do comprador. Os dados do cartão são informados somente no ambiente seguro do Asaas.';
+
+      if(PAGE === 'admin'){
+        CURRENT_PAGE = 'admin';
+        $('publicNav').classList.add('hidden');
+        $('ticker').classList.add('hidden');
+        $('envBanner').classList.add('hidden');
+        hidePublicSections();
+        $('adminCard').classList.remove('hidden');
+        document.title = 'Área do Grêmio — Nova Camisa Oficial';
+        initAdmin();
+        safeScrollTop(false);
+      } else {
+        renderPublicPage(normalizePublicPage(PAGE), {historyMode:'replace', scroll:false});
+        window.addEventListener('popstate', () => {
+          const p = new URL(window.location.href).searchParams.get('p') || 'estudantes';
+          if(p === 'admin') return;
+          renderPublicPage(normalizePublicPage(p), {historyMode:'none', scroll:true});
+        });
+        safeScrollTop(false);
+        resumePendingPaymentCheck();
+      }
+    }
+
+    function normalizePublicPage(page){
+      const p = String(page || '').toLowerCase();
+      return ['estudantes','servidores','modelos','acompanhar'].includes(p) ? p : 'estudantes';
+    }
+
+    function hidePublicSections(){
+      ['orderCard','modelsCard','statusCard'].forEach(id => $(id).classList.add('hidden'));
+    }
+
+    function safeScrollTop(smooth=true){
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        window.scrollTo({top:0,left:0,behavior:smooth ? 'smooth':'auto'});
+      }));
+    }
+
+    function updateRouteHistory(page, mode){
+      if(mode === 'none') return;
+      try{
+        const url = new URL(window.location.href);
+        url.searchParams.set('p', page);
+        const state = {p:page};
+        if(mode === 'replace') history.replaceState(state,'',url.href);
+        else history.pushState(state,'',url.href);
+      }catch(_){ }
+    }
+
+    function renderPublicPage(page, opts={}){
+      const safe = normalizePublicPage(page);
+      CURRENT_PAGE = safe;
+      updateRouteHistory(safe, opts.historyMode || 'push');
+
+      $('publicNav').classList.remove('hidden');
+      $('ticker').classList.remove('hidden');
+      $('adminCard').classList.add('hidden');
+      ['navEst','navServ','navModels','navStatus'].forEach(id => {
+        $(id).classList.remove('active');
+        $(id).removeAttribute('aria-current');
+      });
+      hidePublicSections();
+
+      if(safe === 'modelos'){
+        $('navModels').classList.add('active');
+        $('navModels').setAttribute('aria-current','page');
+        $('modelsCard').classList.remove('hidden');
+        document.title = 'Modelos — Nova Camisa Oficial';
+        setupModelsPage();
+      } else if(safe === 'acompanhar'){
+        $('navStatus').classList.add('active');
+        $('navStatus').setAttribute('aria-current','page');
+        $('statusCard').classList.remove('hidden');
+        document.title = 'Acompanhar pedido — Nova Camisa Oficial';
+        prefillTracking();
+      } else {
+        configureOrderPage(safe === 'estudantes');
+      }
+
+      if(opts.scroll !== false) safeScrollTop(true);
+    }
+
+    function configureOrderPage(isStudent){
+      $('orderCard').classList.remove('hidden');
+      const activeNav = isStudent ? $('navEst') : $('navServ');
+      activeNav.classList.add('active');
+      activeNav.setAttribute('aria-current','page');
+
+      $('badge').textContent = isStudent ? '1º LOTE • ESTUDANTES' : 'ENCOMENDAS • PROFISSIONAIS';
+      $('heroTitle').textContent = isStudent ? 'Camisa Polo Oficial' : 'Camisas para profissionais';
+      $('heroText').textContent = isStudent
+        ? 'Escolha o tamanho, confira os dados e registre sua encomenda da nova camisa oficial.'
+        : 'Escolha gola polo ou gola careca e, se quiser, adicione nome e cargo, área ou função.';
+      $('turmaLabel').textContent = isStudent ? 'Turma *' : 'Setor / área *';
+      document.title = (isStudent ? 'Estudantes' : 'Profissionais') + ' — Nova Camisa Oficial';
+
+      $('turmaAluno').classList.toggle('hidden', !isStudent);
+      $('turmaAluno').required = isStudent;
+      $('setorServidor').classList.toggle('hidden', isStudent);
+      $('setorServidor').required = !isStudent;
+      $('modelField').classList.toggle('hidden', isStudent);
+      $('personalizeToggle').classList.toggle('hidden', isStudent);
+
+      if(isStudent){
+        $('personalizar').checked = false;
+        $('nameShirtField').classList.add('hidden');
+        $('roleField').classList.add('hidden');
+        $('nomeCamisa').required = false;
+        $('cargoFuncao').required = false;
+      }
+
+      const targetPublic = isStudent ? 'ESTUDANTE' : 'SERVIDOR';
+      const products = BOOT.produtos.filter(p => String(p.publico || '').toUpperCase() === targetPublic);
+      const currentCode = $('codigoProduto').value;
+      $('codigoProduto').innerHTML = products.map(p => `<option value="${esc(p.codigo)}">${esc(p.nome)} — ${money(p.preco)}</option>`).join('');
+
+      if(isStudent){
+        const preferred = products.find(p => p.codigo === 'EST-POLO') || products[0];
+        $('codigoProduto').value = preferred ? preferred.codigo : '';
+      } else if(products.some(p => p.codigo === currentCode)){
+        $('codigoProduto').value = currentCode;
+      } else {
+        $('codigoProduto').value = products[0] ? products[0].codigo : '';
+      }
+
+      if(!$('tamanho').options.length || $('tamanho').options.length <= 1){
+        $('tamanho').innerHTML = '<option value="">Selecione...</option>' + BOOT.tamanhos.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+      }
+
+      $('orderClosedNotice').classList.add('hidden');
+      $('orderForm').classList.remove('hidden');
+      $('orderResult').classList.remove('show');
+      const salesStatus = isStudent ? BOOT.vendas.estudantes : BOOT.vendas.servidores;
+      if(String(salesStatus || '').toUpperCase() !== 'ABERTAS'){
+        $('orderClosedNotice').classList.remove('hidden');
+        $('orderForm').classList.add('hidden');
+      }
+
+      updateProduct();
+    }
+
+    function setupLogos(){
+      // 1) Mostra IMEDIATAMENTE previews ultraleves embutidos no HTML.
+      // Assim nunca fica só o quadradinho "PA" esperando as imagens pesadas.
+      renderLogos(PREVIEW_LOGOS);
+
+      const ids = BOOT.logos || {};
+      const signature = [ids.escolaId || '', ids.gremioId || '', ids.projetoId || ''].join('|');
+      const cacheKey = 'camisas_logos_v64_' + signature;
+
+      // 2) Se este aparelho já tem as versões leves em cache, troca na mesma hora.
+      try{
+        const cached = localStorage.getItem(cacheKey);
+        if(cached){
+          const parsed = JSON.parse(cached);
+          renderLogos({
+            escola: parsed.escola || PREVIEW_LOGOS.escola,
+            gremio: parsed.gremio || PREVIEW_LOGOS.gremio,
+            projeto: parsed.projeto || PREVIEW_LOGOS.projeto
+          });
+          return;
+        }
+      }catch(_){}
+
+      // 3) Busca as originais em segundo plano, SEM bloquear a página.
+      const load = () => {
+        google.script.run
+          .withSuccessHandler(async data => {
+            try{
+              const optimized = {
+                escola: (await optimizeLogoForBrowser(data && data.escola)) || PREVIEW_LOGOS.escola,
+                gremio: (await optimizeLogoForBrowser(data && data.gremio)) || PREVIEW_LOGOS.gremio,
+                projeto: (await optimizeLogoForBrowser(data && data.projeto)) || PREVIEW_LOGOS.projeto
+              };
+
+              renderLogos(optimized);
+
+              try{
+                Object.keys(localStorage)
+                  .filter(k => k.startsWith('camisas_logos_') && k !== cacheKey)
+                  .forEach(k => localStorage.removeItem(k));
+                localStorage.setItem(cacheKey, JSON.stringify(optimized));
+              }catch(_){}
+            }catch(err){
+              console.warn('[Loja Digital do Grêmio] Falha ao otimizar logos:', err);
+              // Mantém os previews — não volta para o símbolo PA.
+              renderLogos(PREVIEW_LOGOS);
+            }
+          })
+          .withFailureHandler(err => {
+            console.warn('[Loja Digital do Grêmio] Logos completas não carregadas:', err);
+            // Mantém os previews — a interface continua bonita.
+            renderLogos(PREVIEW_LOGOS);
+          })
+          .getLogosPublicas();
+      };
+
+      if('requestIdleCallback' in window){
+        requestIdleCallback(load, {timeout:450});
+      }else{
+        setTimeout(load, 80);
+      }
+    }
+    function renderLogos(logos){
+      const logoMap = [
+        ['logoEscola', logos && logos.escola],
+        ['logoGremio', logos && logos.gremio],
+        ['logoProjeto', logos && logos.projeto]
+      ];
+
+      let visibleLogoCount = 0;
+      logoMap.forEach(([id, src]) => {
+        const el = $(id);
+        if(!el) return;
+        if(src){
+          el.src = src;
+          el.classList.remove('hidden');
+          visibleLogoCount++;
+        }else{
+          el.classList.add('hidden');
+          el.removeAttribute('src');
+        }
+      });
+
+      if(visibleLogoCount > 0) $('logoFallback').classList.add('hidden');
+      else $('logoFallback').classList.remove('hidden');
+
+      const hasEscola = Boolean(logos && logos.escola);
+      const hasGremio = Boolean(logos && logos.gremio);
+      const hasProjeto = Boolean(logos && logos.projeto);
+
+      $('brandDivider1').classList.toggle('hidden', !(hasEscola && hasGremio));
+      $('brandDivider2').classList.toggle('hidden', !(hasProjeto && (hasEscola || hasGremio)));
+    }
+
+    function optimizeLogoForBrowser(src){
+      if(!src) return Promise.resolve('');
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          try{
+            const maxDim = 220;
+            const scale = Math.min(1, maxDim / Math.max(img.naturalWidth || 1, img.naturalHeight || 1));
+            const w = Math.max(1, Math.round(img.naturalWidth * scale));
+            const h = Math.max(1, Math.round(img.naturalHeight * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d', {alpha:true});
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, w, h);
+
+            let compressed = '';
+            try{ compressed = canvas.toDataURL('image/webp', .84); }catch(_){}
+            if(!compressed || compressed === 'data:,'){
+              compressed = canvas.toDataURL('image/png');
+            }
+            resolve(compressed || src);
+          }catch(_){
+            resolve(src);
+          }
+        };
+        img.onerror = () => resolve('');
+        img.src = src;
+      });
+    }
+
+    function setupNavigation(){
+      const base = BOOT.baseUrl || window.location.href.split('?')[0];
+      const routes = {
+        navEst:'estudantes',
+        navServ:'servidores',
+        navModels:'modelos',
+        navStatus:'acompanhar'
+      };
+
+      Object.entries(routes).forEach(([id,page]) => {
+        const el = $(id);
+        el.href = base + '?p=' + page;
+        el.addEventListener('click', e => {
+          if(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          renderPublicPage(page, {historyMode:'push',scroll:true});
+        });
+      });
+
+      const buttonRoutes = {
+        quickModelsBtn:'modelos',
+        modelOrderStudent:'estudantes',
+        modelOrderStudentBottom:'estudantes',
+        modelOrderServer:'servidores'
+      };
+      Object.entries(buttonRoutes).forEach(([id,page]) => {
+        const el = $(id);
+        if(!el) return;
+        el.addEventListener('click', e => {
+          e.preventDefault();
+          renderPublicPage(page, {historyMode:'push',scroll:true});
+        });
+      });
+    }
+
+    function setupModelsPage(){
+      const findProduct = code => BOOT.produtos.find(p => String(p.codigo || '').toUpperCase() === code);
+      const est = findProduct('EST-POLO');
+      const polo = findProduct('SERV-POLO');
+      const careca = findProduct('SERV-CARECA');
+      if($('modelPriceStudent')) $('modelPriceStudent').textContent = est ? money(est.preco) : 'Consulte o valor';
+      if($('modelPriceServerPolo')) $('modelPriceServerPolo').textContent = polo ? money(polo.preco) : 'Consulte o valor';
+      if($('modelPriceServerCareca')) $('modelPriceServerCareca').textContent = careca ? money(careca.preco) : 'Consulte o valor';
+
+      if(modelsLoaded) return;
+      const ids = BOOT.mockups || {};
+      const hasConfigured = Boolean(ids.estudanteId || ids.servidorPoloId || ids.servidorCarecaId);
+      if(!hasConfigured) return;
+      modelsLoaded = true;
+
+      google.script.run
+        .withSuccessHandler(data => renderModelMockups(data || {}))
+        .withFailureHandler(err => {
+          modelsLoaded = false;
+          console.warn('[Loja Digital do Grêmio] Mockups não carregados:', err);
+        })
+        .getMockupsPublicos();
+    }
+
+    function renderModelMockups(data){
+      setModelMockup('mockupEstudante','placeholderEstudante','visualEstudante',data.estudante);
+      setModelMockup('mockupServidorPolo','placeholderServidorPolo','visualServidorPolo',data.servidorPolo);
+      setModelMockup('mockupServidorCareca','placeholderServidorCareca','visualServidorCareca',data.servidorCareca);
+    }
+
+    function setModelMockup(imgId, placeholderId, visualId, src){
+      const img = $(imgId), placeholder = $(placeholderId), visual = $(visualId);
+      if(!img || !placeholder || !visual) return;
+      if(src){
+        img.src = src;
+        img.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        visual.classList.add('hasImage');
+        img.onclick = () => openModelModal(src, img.alt || 'Modelo da camisa');
+      }else{
+        img.classList.add('hidden');
+        img.removeAttribute('src');
+        placeholder.classList.remove('hidden');
+        visual.classList.remove('hasImage');
+      }
+    }
+
+    function openModelModal(src, alt){
+      if(!src) return;
+      $('modelModalImage').src = src;
+      $('modelModalImage').alt = alt || 'Visualização ampliada do modelo';
+      $('modelModal').classList.add('show');
+      $('modelModal').setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+    }
+
+    function closeModelModal(){
+      $('modelModal').classList.remove('show');
+      $('modelModal').setAttribute('aria-hidden','true');
+      $('modelModalImage').removeAttribute('src');
+      document.body.style.overflow='';
+    }
+
+    $('publicMessageClose').addEventListener('click', closePublicMessage);
+    $('publicMessageModal').addEventListener('click', e => { if(e.target === $('publicMessageModal')) closePublicMessage(); });
+    $('modelModalClose').addEventListener('click', closeModelModal);
+    $('modelModal').addEventListener('click', e => { if(e.target === $('modelModal')) closeModelModal(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModelModal(); });
+
+    function currentProduct(){
+      const code = $('codigoProduto').value;
+      return BOOT.produtos.find(x => String(x.codigo || '') === String(code || '')) || null;
+    }
+
+    function productBasePriceFor(method, product){
+      const p = product || currentProduct();
+      if(!p) return 0;
+      const m = String(method || 'PIX').toUpperCase();
+      if(m === 'PIX' && Number(p.precoPix || 0) > 0) return Number(p.precoPix);
+      if(m === 'CREDIT_CARD' && Number(p.precoCartao || 0) > 0) return Number(p.precoCartao);
+      return Number(p.preco || 0);
+    }
+
+    function getSelectedCardPlan(){
+      const p = currentProduct();
+      if(!p) return null;
+      const code = String(p.codigo || '');
+      const plans = cardPlansCache[code];
+      if(!plans || !Array.isArray(plans.opcoes)) return null;
+      const n = Number($('parcelasCartao').value || 1);
+      return plans.opcoes.find(x => Number(x.parcelas) === n) || null;
+    }
+
+    function setPaymentMethod(method, options={}){
+      const normalized = ['PIX','BOLETO','CREDIT_CARD'].includes(String(method || '').toUpperCase())
+        ? String(method).toUpperCase()
+        : 'PIX';
+      selectedPaymentMethod = normalized;
+      $('metodoPagamento').value = normalized;
+
+      document.querySelectorAll('.payChoice').forEach(btn => {
+        const active = String(btn.dataset.payMethod || '').toUpperCase() === normalized;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+
+      const card = normalized === 'CREDIT_CARD';
+      $('cardInstallmentField').classList.toggle('hidden', !card);
+      if(card){
+        loadCardPlans(Boolean(options.force));
+      }else{
+        $('installmentLoading').classList.add('hidden');
+        $('parcelasCartao').classList.add('hidden');
+        $('cardFeeInfo').classList.add('hidden');
+      }
+      updatePaymentPreview();
+    }
+
+    function renderCardPlans(result){
+      const p = currentProduct();
+      if(!p || !result || String(result.produto || '') !== String(p.codigo || '')) return;
+      cardPlansCache[String(p.codigo || '')] = result;
+      cardPlansLoadingFor = '';
+
+      const select = $('parcelasCartao');
+      const options = Array.isArray(result.opcoes) ? result.opcoes : [];
+      if(!options.length){
+        $('installmentLoading').innerHTML = 'Não há parcelamento disponível para este produto no momento.';
+        $('installmentLoading').classList.remove('hidden');
+        select.classList.add('hidden');
+        $('cardFeeInfo').classList.add('hidden');
+        updatePaymentPreview();
+        return;
+      }
+
+      const previous = Number(select.value || 0);
+      select.innerHTML = options.map(o => {
+        const n = Number(o.parcelas || 1);
+        const suffix = n === 1 ? 'à vista' : `${n}x`;
+        return `<option value="${n}">${suffix} de ${n > 1 ? 'aprox. ' : ''}${money(o.valorParcela)} • total ${money(o.valorTotal)}</option>`;
+      }).join('');
+
+      const preferred = options.some(o => Number(o.parcelas) === previous)
+        ? previous
+        : 1;
+      select.value = String(preferred);
+
+      $('installmentLoading').classList.add('hidden');
+      select.classList.remove('hidden');
+      $('cardFeeInfo').classList.remove('hidden');
+      updatePaymentPreview();
+    }
+
+    function loadCardPlans(force=false){
+      const p = currentProduct();
+      if(!p) return;
+      const code = String(p.codigo || '');
+      if(!force && cardPlansCache[code]){
+        renderCardPlans(cardPlansCache[code]);
+        return;
+      }
+      if(cardPlansLoadingFor === code) return;
+
+      cardPlansLoadingFor = code;
+      $('installmentLoading').innerHTML = '<span class="installmentDot"></span>Consultando as condições do cartão no Asaas...';
+      $('installmentLoading').classList.remove('hidden');
+      $('parcelasCartao').classList.add('hidden');
+      $('cardFeeInfo').classList.add('hidden');
+      updatePaymentPreview();
+
+      google.script.run
+        .withSuccessHandler(result => renderCardPlans(result))
+        .withFailureHandler(err => {
+          cardPlansLoadingFor = '';
+          $('installmentLoading').textContent = (err && err.message)
+            ? err.message
+            : 'Não foi possível consultar o cartão agora. Tente novamente.';
+          $('installmentLoading').classList.remove('hidden');
+          $('parcelasCartao').classList.add('hidden');
+          $('cardFeeInfo').classList.add('hidden');
+          updatePaymentPreview();
+        })
+        .simularOpcoesCartao(code);
+    }
+
+    function updatePaymentPreview(){
+      const p = currentProduct();
+      const preview = $('paymentPricePreview');
+      if(!p){
+        preview.innerHTML = '<strong>Selecione um produto.</strong>';
+        return;
+      }
+
+      const pixPrice = productBasePriceFor('PIX', p);
+      const boletoPrice = productBasePriceFor('BOLETO', p);
+      $('payPixValue').textContent = money(pixPrice);
+      $('payBoletoValue').textContent = money(boletoPrice);
+
+      const cached = cardPlansCache[String(p.codigo || '')];
+      const firstCard = cached && Array.isArray(cached.opcoes) ? cached.opcoes[0] : null;
+      $('payCardValue').textContent = firstCard
+        ? `a partir de ${money(firstCard.valorTotal)}`
+        : 'Consultar parcelas';
+
+      if(selectedPaymentMethod === 'PIX'){
+        preview.innerHTML = `<strong>Pix: ${money(pixPrice)}</strong> • pagamento pelo QR Code ou Pix Copia e Cola.`;
+        return;
+      }
+      if(selectedPaymentMethod === 'BOLETO'){
+        preview.innerHTML = `<strong>Boleto: ${money(boletoPrice)}</strong> • o boleto será aberto na página segura do Asaas.`;
+        return;
+      }
+
+      const plan = getSelectedCardPlan();
+      if(!plan){
+        preview.innerHTML = '<strong>Cartão:</strong> consultando as condições e taxas no Asaas...';
+        return;
+      }
+
+      const n = Number(plan.parcelas || 1);
+      const installmentText = n === 1 ? `à vista de ${money(plan.valorParcela)}` : `${n}x de aprox. ${money(plan.valorParcela)}`;
+      preview.innerHTML =
+        `<strong>Cartão: ${installmentText}</strong> • total ${money(plan.valorTotal)}.` +
+        (Number(plan.acrescimo || 0) > 0
+          ? ` Acréscimo do cartão: <strong>${money(plan.acrescimo)}</strong>.`
+          : '');
+
+      $('cardFeeInfo').innerHTML =
+        `Valor-base: <strong>${money(plan.valorBase)}</strong> • ` +
+        `total no cartão: <strong>${money(plan.valorTotal)}</strong> • ` +
+        `acréscimo: <strong>${money(plan.acrescimo)}</strong>.<br>` +
+        `As condições são calculadas pelo Asaas no momento da compra. Os dados do cartão são informados somente no ambiente seguro do Asaas.`;
+    }
+
+    function updateProduct(){
+      const p = currentProduct();
+      $('price').textContent = p ? money(p.preco) : '—';
+      $('productName').textContent = p ? p.nome : 'Selecione um modelo';
+
+      if(p){
+        cardPlansLoadingFor = '';
+        if(selectedPaymentMethod === 'CREDIT_CARD') loadCardPlans(false);
+      }
+      updatePaymentPreview();
+    }
+
+    $('codigoProduto').addEventListener('change', updateProduct);
+    document.querySelectorAll('.payChoice').forEach(btn => {
+      btn.addEventListener('click', () => setPaymentMethod(btn.dataset.payMethod || 'PIX'));
+    });
+    $('parcelasCartao').addEventListener('change', updatePaymentPreview);
+
+    $('personalizar').addEventListener('change', e => {
+      const on = e.target.checked;
+      $('nameShirtField').classList.toggle('hidden', !on);
+      $('roleField').classList.toggle('hidden', !on);
+      $('nomeCamisa').required = on;
+      $('cargoFuncao').required = on;
+      if(!on){ $('nomeCamisa').value=''; $('cargoFuncao').value=''; }
+    });
+
+    let checkoutProgressTimer = null;
+    function setCheckoutProgress(active){
+      const box = $('submitProgress');
+      const text = $('submitProgressText');
+      if(checkoutProgressTimer){ clearTimeout(checkoutProgressTimer); checkoutProgressTimer = null; }
+      if(!box || !text) return;
+      if(!active){ box.classList.remove('show'); text.textContent='Registrando seu pedido com segurança…'; return; }
+      box.classList.add('show');
+      text.textContent='Registrando seu pedido com segurança…';
+      checkoutProgressTimer = setTimeout(() => {
+        text.textContent='Abrindo seu pagamento seguro…';
+        checkoutProgressTimer = setTimeout(() => {
+          text.textContent='Quase pronto. Não feche esta página.';
+        }, 2200);
+      }, 1200);
+    }
+
+
+    function paymentTransitionHtml(method){
+      const label = method === 'BOLETO' ? 'boleto' : 'cartão';
+      return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pagamento seguro • Loja Digital do Grêmio</title><style>
+        :root{font-family:Arial,sans-serif;color:#063667;background:#f6f8f8}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(145deg,#f7fbff,#fff8ef)}
+        .box{width:min(520px,100%);background:#fff;border:1px solid #dfe8e3;border-radius:24px;padding:30px;box-shadow:0 18px 48px rgba(6,54,103,.12);text-align:center}.brand{font-weight:800;letter-spacing:.04em;color:#0d5795;font-size:13px}.spin{width:42px;height:42px;border:4px solid #dce8f0;border-top-color:#67b82e;border-radius:50%;margin:24px auto 18px;animation:s .8s linear infinite}@keyframes s{to{transform:rotate(360deg)}}h1{font-size:24px;margin:0 0 10px;color:#063667}p{margin:0;color:#5d6c7b;line-height:1.55}.mini{margin-top:18px;font-size:12px;color:#7a8793}
+      </style></head><body><main class="box"><div class="brand">LOJA DIGITAL DO GRÊMIO</div><div class="spin"></div><h1>Preparando seu pagamento</h1><p>Seu pedido está sendo registrado. Assim que a cobrança de ${label} ficar pronta, esta página abrirá automaticamente o ambiente seguro do Asaas.</p><div class="mini">Não feche esta aba.</div></main></body></html>`;
+    }
+
+    function prepareAutomaticAsaasWindow(method){
+      paymentAutoRequested = ['BOLETO','CREDIT_CARD'].includes(String(method || '').toUpperCase());
+      paymentAutoWindow = null;
+      if(!paymentAutoRequested) return;
+      try{
+        const w = window.open('about:blank','_blank');
+        if(!w) return;
+        paymentAutoWindow = w;
+        try{
+          w.document.open();
+          w.document.write(paymentTransitionHtml(String(method || '').toUpperCase()));
+          w.document.close();
+        }catch(_){ }
+      }catch(_){
+        paymentAutoWindow = null;
+      }
+    }
+
+    function isTrustedAsaasPaymentUrl(value){
+      try{
+        const u = new URL(String(value || ''));
+        const host = String(u.hostname || '').toLowerCase();
+        return u.protocol === 'https:' && (host === 'asaas.com' || host.endsWith('.asaas.com'));
+      }catch(_){
+        return false;
+      }
+    }
+
+    function completeAutomaticAsaasWindow(res){
+      const method = String(res && res.metodoPagamento || '').toUpperCase();
+      const url = String(res && res.paymentUrl || '');
+      if(!['BOLETO','CREDIT_CARD'].includes(method) || !isTrustedAsaasPaymentUrl(url)){
+        if(paymentAutoWindow && !paymentAutoWindow.closed){ try{ paymentAutoWindow.close(); }catch(_){ } }
+        paymentAutoWindow = null;
+        paymentAutoRequested = false;
+        return;
+      }
+
+      const paymentText = $('paymentBoxText');
+      if(paymentText){
+        paymentText.textContent += ' Você será encaminhado automaticamente para o Asaas. Se a abertura automática não ocorrer, use o botão abaixo.';
+      }
+
+      if(paymentAutoWindow && !paymentAutoWindow.closed){
+        const w = paymentAutoWindow;
+        paymentAutoWindow = null;
+        paymentAutoRequested = false;
+        setTimeout(() => {
+          try{
+            try{ w.opener = null; }catch(_){ }
+            w.location.replace(url);
+          }catch(_){
+            try{ w.location.href = url; }catch(__){ }
+          }
+        }, 180);
+        return;
+      }
+
+      // Alguns navegadores bloqueiam novas abas mesmo após um clique. Nesse caso,
+      // mantemos o botão do próprio checkout como fallback, sem interromper o pedido.
+      paymentAutoRequested = false;
+    }
+
+    function cancelAutomaticAsaasWindow(){
+      if(paymentAutoWindow && !paymentAutoWindow.closed){
+        try{ paymentAutoWindow.close(); }catch(_){ }
+      }
+      paymentAutoWindow = null;
+      paymentAutoRequested = false;
+    }
+
+    $('orderForm').addEventListener('submit', e => {
+      e.preventDefault();
+
+      const method = String($('metodoPagamento').value || 'PIX').toUpperCase();
+      const selectedPlan = method === 'CREDIT_CARD' ? getSelectedCardPlan() : null;
+      if(method === 'CREDIT_CARD' && !selectedPlan){
+        showPublicMessage('Aguarde um instante','As condições do cartão ainda estão sendo calculadas. Assim que aparecerem, escolha o número de parcelas.');
+        loadCardPlans(false);
+        return;
+      }
+
+      const btn = $('submitBtn');
+      prepareAutomaticAsaasWindow(method);
+      btn.disabled = true;
+      btn.classList.add('loading');
+      setCheckoutProgress(true);
+
+      const isStudent = CURRENT_PAGE === 'estudantes';
+      const payload = {
+        publico: isStudent ? 'ESTUDANTE':'SERVIDOR',
+        nome: $('nome').value,
+        turmaSetor: isStudent ? $('turmaAluno').value : $('setorServidor').value,
+        whatsapp: $('whatsapp').value,
+        email: $('email').value,
+        cpf: $('cpf').value,
+        codigoProduto: isStudent ? 'EST-POLO' : $('codigoProduto').value,
+        tamanho: $('tamanho').value,
+        nomeCamisa: $('personalizar').checked ? $('nomeCamisa').value : '',
+        cargoFuncao: $('personalizar').checked ? $('cargoFuncao').value : '',
+        observacoes: $('observacoes').value,
+        metodoPagamento: method,
+        parcelas: method === 'CREDIT_CARD' ? Number($('parcelasCartao').value || 1) : 1,
+        aceitou: $('aceitou').checked
+      };
+
+      google.script.run
+        .withSuccessHandler(showOrderSuccess)
+        .withFailureHandler(showError)
+        .criarPedido(payload);
+    });
+
+    function paymentMethodLabel(method){
+      switch(String(method || '').toUpperCase()){
+        case 'PIX': return 'Pix';
+        case 'BOLETO': return 'Boleto';
+        case 'CREDIT_CARD': return 'Cartão de crédito';
+        case 'DEBIT_CARD': return 'Cartão de débito';
+        default: return 'Pagamento';
+      }
+    }
+
+    function showOrderSuccess(res){
+      const btn = $('submitBtn');
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      setCheckoutProgress(false);
+
+      $('orderResult').classList.add('show');
+      $('resultId').textContent = res.pedido;
+      setStatusBadge($('resultStatus'), res.status);
+
+      const method = String(res.metodoPagamento || 'PIX').toUpperCase();
+      const installments = Number(res.parcelas || 1);
+      const base = Number(res.valorBase || res.valor || 0);
+      const charged = Number(res.valorCobrado || res.valor || 0);
+      const surcharge = Number(res.acrescimoPagamento || 0);
+      const installmentValue = Number(res.valorParcela || charged || 0);
+
+      let paymentSummary = '';
+      if(method === 'CREDIT_CARD'){
+        paymentSummary =
+          `<br>Pagamento: <strong>cartão de crédito${installments > 1 ? ` em ${installments}x` : ' à vista'}</strong>` +
+          ` • ${installments > 1 ? `${installments}x de aprox. ${money(installmentValue)}` : money(charged)}` +
+          ` • total ${money(charged)}.` +
+          (surcharge > 0 ? `<br>Acréscimo do cartão: <strong>${money(surcharge)}</strong> sobre o valor-base de ${money(base)}.` : '');
+      }else if(method === 'BOLETO'){
+        paymentSummary = `<br>Pagamento: <strong>boleto</strong> • total ${money(charged)}.`;
+      }else{
+        paymentSummary = `<br>Pagamento: <strong>Pix</strong> • total ${money(charged)}.`;
+      }
+
+      $('resultText').innerHTML =
+        `${esc(res.produto)} • Tamanho ${esc(res.tamanho)}<br>` +
+        `Pedido <strong>${esc(res.pedido)}</strong>.${paymentSummary}<br>` +
+        `<span style="display:inline-block;margin-top:6px">Guarde o número do pedido para acompanhar produção e retirada.</span>`;
+
+      if(res.pixError && method === 'PIX'){
+        $('pixErrorNotice').innerHTML = `<strong>QR Code ainda não disponível.</strong><br>${esc(cleanAsaasMessage(res.pixError))}`;
+        $('pixErrorNotice').classList.remove('hidden');
+      } else {
+        $('pixErrorNotice').classList.add('hidden');
+      }
+
+      renderPaymentResult(res);
+      completeAutomaticAsaasWindow(res);
+
+      $('checkPaymentBtn').classList.remove('hidden');
+      $('checkPaymentBtn').dataset.pedido = res.pedido;
+      $('checkPaymentBtn').dataset.phone = $('whatsapp').value;
+
+      lastOrderContext = {pedido:res.pedido, phone:$('whatsapp').value, paid:false};
+      safeSessionSet('camisas_last_order', res.pedido);
+      safeSessionSet('camisas_last_phone', $('whatsapp').value);
+      safeSessionSet('camisas_payment_pending', '1');
+      safeSessionSet('camisas_last_paid', '0');
+
+      $('orderForm').classList.add('hidden');
+      $('orderResult').scrollIntoView({behavior:'smooth',block:'center'});
+      startAutoCheck(res.pedido, $('whatsapp').value);
+    }
+
+    function showPublicMessage(title, message){
+      const modal = $('publicMessageModal');
+      if(!modal) return;
+      $('publicMessageTitle').textContent = title || 'Aviso';
+      $('publicMessageText').textContent = message || '';
+      modal.classList.remove('hidden');
+      document.body.style.overflow='hidden';
+    }
+
+    function closePublicMessage(){
+      const modal = $('publicMessageModal');
+      if(!modal) return;
+      modal.classList.add('hidden');
+      document.body.style.overflow='';
+    }
+
+    function showError(err){
+      const btn = $('submitBtn');
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      setCheckoutProgress(false);
+      cancelAutomaticAsaasWindow();
+      const msg = err && err.message ? err.message : 'Não foi possível concluir o pedido.';
+      const partial = /pedido\s+PA-[A-Z]-\d+\s+foi registrado/i.test(msg);
+      showPublicMessage(partial ? 'Pedido salvo, pagamento pendente' : 'Não foi possível concluir', msg);
+    }
+
+    $('copyPixBtn').addEventListener('click', () => {
+      copyText($('pixPayload').value, $('copyPixBtn'));
+    });
+
+    $('checkPaymentBtn').addEventListener('click', () => {
+      checkPaymentNow($('checkPaymentBtn').dataset.pedido, $('checkPaymentBtn').dataset.phone, true);
+    });
+
+    function checkPaymentNow(pedido, phone, manual, done){
+      if(!pedido || !phone){ if(done) done(null); return; }
+      const btn = $('checkPaymentBtn');
+      if(!manual && autoCheckInFlight){ if(done) done(null); return; }
+
+      if(manual && btn) btn.disabled = true;
+      if(!manual) autoCheckInFlight = true;
+
+      google.script.run
+        .withSuccessHandler(r => {
+          if(manual && btn) btn.disabled = false;
+          if(!manual) autoCheckInFlight = false;
+          handlePaymentCheckResult(r, pedido, phone);
+          if(done) done(r);
+        })
+        .withFailureHandler(err => {
+          if(manual && btn) btn.disabled = false;
+          if(!manual) autoCheckInFlight = false;
+          if(manual) showPublicMessage('Não foi possível verificar', err.message || 'Não foi possível verificar o pagamento agora.');
+          if(done) done(null, err);
+        })
+        .consultarPedido(pedido, phone, false);
+    }
+
+    function isPaymentApprovedStatus(status){
+      return ['PAGO','CONFIRMADO'].includes(String(status || '').toUpperCase());
+    }
+
+    function handlePaymentCheckResult(r, pedido, phone){
+      if(!r) return;
+      const status = String(r.statusPagamento || '').toUpperCase();
+      setStatusBadge($('resultStatus'), r.statusPagamento);
+
+      if(isPaymentApprovedStatus(status)){
+        stopAutoCheck();
+        $('checkPaymentBtn').classList.add('hidden');
+        $('pixBox').classList.add('hidden');
+        $('pixErrorNotice').classList.add('hidden');
+        safeSessionSet('camisas_payment_pending', '0');
+        safeSessionSet('camisas_last_paid', '1');
+
+        if(!lastOrderContext) lastOrderContext = {pedido, phone, paid:false};
+        if(!lastOrderContext.paid){
+          lastOrderContext.paid = true;
+          showPaymentSuccess(pedido, status);
+        }
+      }
+    }
+
+    $('cpf').addEventListener('input', e => {
+      let v = e.target.value.replace(/\D/g,'').slice(0,11);
+      v = v.replace(/(\d{3})(\d)/,'$1.$2')
+           .replace(/(\d{3})(\d)/,'$1.$2')
+           .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+      e.target.value = v;
+    });
+
+    $('statusBtn').addEventListener('click', () => {
+      const btn = $('statusBtn');
+      btn.disabled = true;
+      google.script.run
+        .withSuccessHandler(res => {
+          btn.disabled=false;
+          renderStatus(res);
+        })
+        .withFailureHandler(err => {
+          btn.disabled=false;
+          showPublicMessage('Não foi possível consultar', err.message || 'Pedido não encontrado.');
+        })
+        .consultarPedido($('statusOrder').value, $('statusPhone').value, true);
+    });
+
+    function prefillTracking(){
+      const params = new URLSearchParams(window.location.search);
+      const order = params.get('pedido') || safeSessionGet('camisas_last_order') || '';
+      const phone = params.get('whatsapp') || safeSessionGet('camisas_last_phone') || '';
+      if(order) $('statusOrder').value = order;
+      if(phone) $('statusPhone').value = phone;
+    }
+
+    function renderStatus(r){
+      const box = $('statusResult');
+      const finalPayment = ['PAGO','CONFIRMADO'].includes(String(r.statusPagamento).toUpperCase());
+
+      box.className = 'result show';
+      box.innerHTML = `
+        <div class="orderId">${esc(r.pedido)}</div>
+        <div style="margin:9px 0"><span id="dynamicStatusBadge" class="status"></span></div>
+        <div class="muted">
+          <strong>${esc(r.modelo)}</strong> • Tamanho ${esc(r.tamanho)}<br>
+          Lote: ${esc(r.lote)} • ${money(r.valor)}
+          ${Number(r.valorBase || 0) > 0 && Number(r.valor || 0) > Number(r.valorBase || 0) ? `<br>Valor-base: ${money(r.valorBase)} • Acréscimo do cartão: ${money(r.acrescimoPagamento || (Number(r.valor)-Number(r.valorBase)))}` : ''}
+          ${r.meioPagamento ? `<br>Forma de pagamento: <strong>${esc(r.meioPagamento)}</strong>${Number(r.parcelas || 1) > 1 ? ` • ${Number(r.parcelas)}x` : ''}` : ''}
+          ${r.dataPagamento ? `<br>Pagamento registrado em: <strong>${esc(r.dataPagamento)}</strong>` : ''}
+          ${r.prazoPrevisto ? `<br>Previsão atual: <strong>${esc(r.prazoPrevisto)}</strong>` : ''}
+          ${r.ultimaAtualizacao ? `<br>Última atualização: ${esc(r.ultimaAtualizacao)}` : ''}
+        </div>
+
+        ${renderTimeline(r)}
+
+        ${r.mensagemCliente ? `<div class="notice blue"><strong>Mensagem do Grêmio</strong><br>${esc(r.mensagemCliente)}</div>` : ''}
+        ${r.statusEntrega === 'DISPONÍVEL PARA RETIRADA' && r.localRetirada ? `<div class="notice green"><strong>Retirada disponível</strong><br>${esc(r.localRetirada)}</div>` : ''}
+
+        ${r.pixError && !finalPayment ? `<div class="notice orange"><strong>QR Code não disponível.</strong><br>${esc(cleanAsaasMessage(r.pixError))}</div>` : ''}
+        <div id="statusPixHost"></div>
+
+        ${r.linkPagamento && !finalPayment ? `<a class="btn primary smallBtn" href="${attr(r.linkPagamento)}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-top:16px">${String(r.meioPagamento || '').toUpperCase().includes('BOLETO') ? 'ABRIR BOLETO NO ASAAS' : String(r.meioPagamento || '').toUpperCase().includes('CARTÃO') ? 'ABRIR PAGAMENTO NO ASAAS' : 'ABRIR PIX NO ASAAS'}</a>`:''}
+      `;
+
+      setStatusBadge($('dynamicStatusBadge'), r.statusPagamento);
+
+      if(r.pix && !finalPayment){
+        const host = $('statusPixHost');
+        host.innerHTML = `
+          <div class="pixBox">
+            <div class="pixGrid">
+              ${r.pix.encodedImage ? `<img class="pixQr" src="data:image/png;base64,${attr(r.pix.encodedImage)}" alt="QR Code Pix">` : ''}
+              <div>
+                <div class="pixTitle">Pix deste pedido</div>
+                <div class="muted">Escaneie ou copie o código abaixo. A confirmação é acompanhada automaticamente pelo sistema.</div>
+                <textarea id="statusPixPayload" class="pixPayload" readonly>${esc(r.pix.payload || '')}</textarea>
+                <div class="pixActions">
+                  <button type="button" id="statusCopyPix" class="btn secondary smallBtn">COPIAR PIX</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        const copy = $('statusCopyPix');
+        if(copy) copy.addEventListener('click', () => copyText(r.pix.payload || '', copy));
+      }
+    }
+
+    function renderTimeline(r){
+      const pay = String(r.statusPagamento || '').toUpperCase();
+      const prod = String(r.statusProducao || '').toUpperCase();
+      const delivery = String(r.statusEntrega || '').toUpperCase();
+
+      const paymentDone = ['PAGO','CONFIRMADO'].includes(pay);
+      const sent = ['ENVIADO À GRÁFICA','EM PRODUÇÃO','PRONTO'].includes(prod);
+      const producing = ['EM PRODUÇÃO','PRONTO'].includes(prod);
+      const ready = prod === 'PRONTO' || ['DISPONÍVEL PARA RETIRADA','ENTREGUE'].includes(delivery);
+      const delivered = delivery === 'ENTREGUE';
+
+      const steps = [
+        {title:'Pagamento', text: paymentDone ? (pay === 'PAGO' ? 'Pagamento recebido.' : 'Pagamento aprovado.') : 'Aguardando pagamento.', done:paymentDone, current:!paymentDone},
+        {title:'Enviado à confecção', text: sent ? 'Pedido encaminhado para produção.' : 'Ainda não enviado à confecção.', done:sent, current:paymentDone && !sent},
+        {title:'Em produção', text: producing ? 'Sua camisa está em produção.' : 'Aguardando início da produção.', done:producing, current:sent && !producing},
+        {title:'Pronto / retirada', text: ready ? 'Pedido pronto ou disponível para retirada.' : 'Aguardando finalização.', done:ready, current:producing && !ready},
+        {title:'Entregue', text: delivered ? 'Pedido entregue.' : 'Entrega ainda não concluída.', done:delivered, current:ready && !delivered}
+      ];
+
+      return `<div class="timeline">${
+        steps.map((s,i)=>`
+          <div class="timelineStep ${s.done?'done':''} ${s.current?'current':''}">
+            <div class="timelineDot">${s.done?'✓':(i+1)}</div>
+            <div class="timelineCopy"><strong>${esc(s.title)}</strong><span>${esc(s.text)}</span></div>
+          </div>
+        `).join('')
+      }</div>`;
+    }
+
+    function renderPaymentResult(res){
+      const box = $('pixBox');
+      const link = $('paymentButton');
+      const qr = $('pixQr');
+      const pixOnly = $('pixOnlyContent');
+      const copyBtn = $('copyPixBtn');
+      const title = $('paymentBoxTitle');
+      const text = $('paymentBoxText');
+      const expiration = $('pixExpiration');
+
+      const method = String(res.metodoPagamento || 'PIX').toUpperCase();
+      const paymentUrl = res.paymentUrl || '';
+      const pix = res.pix || null;
+      const installments = Number(res.parcelas || 1);
+      const total = Number(res.valorCobrado || res.valor || 0);
+      const installmentValue = Number(res.valorParcela || total || 0);
+
+      box.classList.remove('hidden');
+      qr.classList.add('hidden');
+      qr.removeAttribute('src');
+      pixOnly.classList.add('hidden');
+      copyBtn.classList.add('hidden');
+      expiration.textContent = '';
+
+      if(paymentUrl){
+        link.href = paymentUrl;
+        link.classList.remove('hidden');
+      }else{
+        link.removeAttribute('href');
+        link.classList.add('hidden');
+      }
+
+      if(method === 'PIX'){
+        title.textContent = 'Pague por Pix';
+        text.textContent = 'Escaneie o QR Code ou use o Pix Copia e Cola. A confirmação é acompanhada automaticamente pelo sistema.';
+        link.textContent = 'ABRIR PIX NO ASAAS';
+
+        if(pix && pix.encodedImage){
+          qr.src = 'data:image/png;base64,' + pix.encodedImage;
+          qr.classList.remove('hidden');
+        }
+        if(pix && pix.payload){
+          $('pixPayload').value = pix.payload;
+          pixOnly.classList.remove('hidden');
+          copyBtn.classList.remove('hidden');
+        }else{
+          $('pixPayload').value = '';
+        }
+        expiration.textContent = pix && pix.expirationDate ? ('QR Code válido até: ' + pix.expirationDate) : '';
+        if(!pix && !paymentUrl) box.classList.add('hidden');
+        return;
+      }
+
+      if(method === 'BOLETO'){
+        title.textContent = 'Pagamento por boleto';
+        text.textContent = `Total ${money(total)}. Abra a página segura do Asaas para gerar e pagar o boleto.`;
+        link.textContent = 'ABRIR BOLETO NO ASAAS';
+        if(!paymentUrl) box.classList.add('hidden');
+        return;
+      }
+
+      title.textContent = installments > 1
+        ? `Cartão de crédito • ${installments}x`
+        : 'Cartão de crédito • à vista';
+      text.textContent = installments > 1
+        ? `${installments}x de ${money(installmentValue)} • total ${money(total)}. Os dados do cartão são preenchidos somente na página segura do Asaas.`
+        : `Total ${money(total)}. Os dados do cartão são preenchidos somente na página segura do Asaas.`;
+      link.textContent = 'PAGAR COM CARTÃO NO ASAAS';
+      if(!paymentUrl) box.classList.add('hidden');
+    }
+
+    function cleanAsaasMessage(msg){
+      return String(msg || '').replace(/^Asaas HTTP \d+:\s*/i,'');
+    }
+
+    function setStatusBadge(el, status){
+      const s = String(status || '').toUpperCase();
+      el.textContent = status || '';
+      el.className = 'status';
+
+      if(s === 'PAGO') el.classList.add('paid');
+      else if(s === 'CONFIRMADO') el.classList.add('confirmed');
+      else if(['ESTORNADO','CANCELADO','ERRO NA COBRANÇA'].includes(s)) el.classList.add('danger');
+      else el.classList.add('waiting');
+    }
+
+    function copyText(text, button){
+      if(!text) return;
+
+      const done = () => {
+        const old = button.textContent;
+        button.textContent = 'COPIADO ✓';
+        setTimeout(() => button.textContent = old, 1800);
+      };
+
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+      } else {
+        fallbackCopy(text, done);
+      }
+    }
+
+    function fallbackCopy(text, callback){
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try{ document.execCommand('copy'); }catch(_){}
+      document.body.removeChild(ta);
+      callback();
+    }
+
+    function stopAutoCheck(){
+      if(autoCheckTimer) clearTimeout(autoCheckTimer);
+      autoCheckTimer = null;
+      autoCheckInFlight = false;
+    }
+
+    function scheduleAutoCheck(delay){
+      if(!lastOrderContext || lastOrderContext.paid) return;
+      if(Date.now() - autoCheckStartedAt >= AUTO_CHECK_MAX_MS){ stopAutoCheck(); return; }
+      if(autoCheckTimer) clearTimeout(autoCheckTimer);
+      autoCheckTimer = setTimeout(runAutoCheckTick, Math.max(1200, Number(delay || AUTO_CHECK_VISIBLE_MS)));
+    }
+
+    function runAutoCheckTick(){
+      if(!lastOrderContext || lastOrderContext.paid){ stopAutoCheck(); return; }
+      if(Date.now() - autoCheckStartedAt >= AUTO_CHECK_MAX_MS){ stopAutoCheck(); return; }
+
+      checkPaymentNow(lastOrderContext.pedido, lastOrderContext.phone, false, () => {
+        if(lastOrderContext && !lastOrderContext.paid){
+          scheduleAutoCheck(document.visibilityState === 'visible' ? AUTO_CHECK_VISIBLE_MS : AUTO_CHECK_HIDDEN_MS);
+        }
+      });
+    }
+
+    function startAutoCheck(pedido, phone, immediate=true){
+      stopAutoCheck();
+      autoCheckStartedAt = Date.now();
+      lastOrderContext = {pedido, phone, paid:false};
+      safeSessionSet('camisas_payment_pending', '1');
+      safeSessionSet('camisas_last_paid', '0');
+      scheduleAutoCheck(immediate ? 1800 : AUTO_CHECK_VISIBLE_MS);
+    }
+
+    function resumePendingPaymentCheck(){
+      const pedido = safeSessionGet('camisas_last_order');
+      const phone = safeSessionGet('camisas_last_phone');
+      const alreadyPaid = safeSessionGet('camisas_last_paid') === '1';
+      const pending = safeSessionGet('camisas_payment_pending') === '1';
+      if(!pedido || !phone || alreadyPaid || !pending) return;
+      startAutoCheck(pedido, phone, true);
+    }
+
+    function refreshPendingPaymentNow(){
+      if(!lastOrderContext || lastOrderContext.paid) return;
+      checkPaymentNow(lastOrderContext.pedido, lastOrderContext.phone, false, () => {
+        if(lastOrderContext && !lastOrderContext.paid && !autoCheckTimer){
+          scheduleAutoCheck(AUTO_CHECK_VISIBLE_MS);
+        }
+      });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if(document.visibilityState === 'visible') refreshPendingPaymentNow();
+    });
+    window.addEventListener('focus', refreshPendingPaymentNow);
+    window.addEventListener('pageshow', refreshPendingPaymentNow);
+    window.addEventListener('online', refreshPendingPaymentNow);
+
+    function showPaymentSuccess(pedido, status){
+      $('successOrderId').textContent = pedido;
+      $('successTitle').textContent = String(status || '').toUpperCase() === 'CONFIRMADO' ? 'Pagamento aprovado! 🎉' : 'Pagamento realizado! 🎉';
+      $('paymentSuccessModal').classList.remove('hidden');
+      document.body.style.overflow='hidden';
+      makeConfetti();
+    }
+
+    function makeConfetti(){
+      const layer = $('confettiLayer');
+      layer.innerHTML = '';
+      const colors = ['#063667','#F36F00','#67B82E','#FFD500','#03C2B6','#7A3CEE','#FF2E99'];
+
+      for(let i=0;i<48;i++){
+        const piece = document.createElement('span');
+        piece.className = 'confettiPiece';
+        piece.style.left = Math.random()*100 + '%';
+        piece.style.background = colors[i % colors.length];
+        piece.style.setProperty('--dur', (2.0 + Math.random()*1.6) + 's');
+        piece.style.setProperty('--x', ((Math.random()-.5)*260) + 'px');
+        piece.style.animationDelay = (Math.random()*.45) + 's';
+        layer.appendChild(piece);
+      }
+    }
+
+    $('successCloseBtn').addEventListener('click', () => { $('paymentSuccessModal').classList.add('hidden'); document.body.style.overflow=''; });
+    $('successTrackBtn').addEventListener('click', () => {
+      $('paymentSuccessModal').classList.add('hidden');
+      document.body.style.overflow='';
+      renderPublicPage('acompanhar', {historyMode:'push',scroll:true});
+      const pedido = safeSessionGet('camisas_last_order');
+      const phone = safeSessionGet('camisas_last_phone');
+      if(pedido && phone){
+        $('statusOrder').value = pedido;
+        $('statusPhone').value = phone;
+        const btn = $('statusBtn');
+        btn.disabled = true;
+        google.script.run
+          .withSuccessHandler(res => { btn.disabled=false; renderStatus(res); })
+          .withFailureHandler(() => { btn.disabled=false; })
+          .consultarPedido(pedido, phone, true);
+      }
+    });
+
+    /* =========================
+       ÁREA DO GRÊMIO
+       ========================= */
+
+    function initAdmin(){
+      if(!BOOT.adminConfigured){
+        $('adminLoginHelp').innerHTML = '<strong>Acesso ainda não configurado.</strong><br>Na planilha, abra o menu “🛍️ Loja do Grêmio” → “🔐 Configurar acesso da Área do Grêmio”.';
+      }
+
+      const token = safeSessionGet(ADMIN_TOKEN_KEY);
+      const name = safeSessionGet(ADMIN_NAME_KEY);
+
+      if(token && name){
+        $('adminName').value = name;
+        showAdminPanel(name);
+        loadAdminData();
+      }
+    }
+
+    $('adminLoginBtn').addEventListener('click', () => {
+      const btn = $('adminLoginBtn');
+      btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(res => {
+          btn.disabled = false;
+          safeSessionSet(ADMIN_TOKEN_KEY, res.token);
+          safeSessionSet(ADMIN_NAME_KEY, res.nome);
+          showAdminPanel(res.nome);
+          loadAdminData();
+        })
+        .withFailureHandler(err => {
+          btn.disabled = false;
+          alert(err.message || 'Não foi possível entrar.');
+        })
+        .adminLogin($('adminCode').value, $('adminName').value);
+    });
+
+    $('adminCode').addEventListener('keydown', e => {
+      if(e.key === 'Enter') $('adminLoginBtn').click();
+    });
+
+    function showAdminPanel(name){
+      $('adminLoginBox').classList.add('hidden');
+      $('adminPanel').classList.remove('hidden');
+      $('adminOperator').textContent = name || 'Grêmio';
+    }
+
+    function showAdminLogin(){
+      $('adminPanel').classList.add('hidden');
+      $('adminLoginBox').classList.remove('hidden');
+    }
+
+    $('adminLogoutBtn').addEventListener('click', () => {
+      const token = getAdminToken();
+      google.script.run.withSuccessHandler(()=>{}).adminLogout(token);
+      safeSessionRemove(ADMIN_TOKEN_KEY);
+      safeSessionRemove(ADMIN_NAME_KEY);
+      adminOrdersCache = [];
+      showAdminLogin();
+    });
+
+    function getAdminToken(){
+      return safeSessionGet(ADMIN_TOKEN_KEY) || '';
+    }
+
+    function adminFiltersPayload(){
+      return {
+        query:$('admSearch').value,
+        publico:$('admFilterPublic').value,
+        pagamento:$('admFilterPayment').value,
+        producao:$('admFilterProduction').value,
+        entrega:$('admFilterDelivery').value
+      };
+    }
+
+    function loadAdminData(){
+      const token = getAdminToken();
+      if(!token){ showAdminLogin(); return; }
+
+      $('adminOrdersMeta').textContent = 'Carregando pedidos...';
+
+      google.script.run
+        .withSuccessHandler(res => {
+          adminOrdersCache = res.pedidos || [];
+          adminSettingsCache = res.settings || {};
+          renderAdminSummary(res.resumo || {});
+          renderAdminSettings(res.settings || {});
+          renderAdminOrders(adminOrdersCache);
+        })
+        .withFailureHandler(err => {
+          if(/sessão|session/i.test(err.message || '')){
+            safeSessionRemove(ADMIN_TOKEN_KEY);
+            showAdminLogin();
+          }
+          $('adminOrdersMeta').textContent = err.message || 'Erro ao carregar o painel.';
+        })
+        .adminGetData(token, adminFiltersPayload());
+    }
+
+    function renderAdminSummary(r){
+      $('statTotal').textContent = r.total || 0;
+      $('statPaid').textContent = r.pagos || 0;
+      $('statWaiting').textContent = r.aguardando || 0;
+      $('statProduction').textContent = r.emProducao || 0;
+      $('statReady').textContent = r.prontos || 0;
+      $('statDelivered').textContent = r.entregues || 0;
+      $('statRevenue').textContent = money(r.receitaPaga || 0);
+    }
+
+    function renderAdminSettings(s){
+      $('admSalesStudents').value = s.vendasEstudantes || 'ABERTAS';
+      $('admSalesServers').value = s.vendasServidores || 'ABERTAS';
+      $('admLotStudents').value = s.loteEstudantes || '';
+      $('admLotServers').value = s.loteServidores || '';
+      $('admDefaultDays').value = s.prazoPadrao || 15;
+      $('admAutoEmail').checked = Boolean(s.emailsAutomaticos);
+      $('admAsaasNotify').checked = Boolean(s.notificacoesAsaas);
+      $('admSms').checked = Boolean(s.smsAsaas);
+      $('admWaAsaas').checked = Boolean(s.whatsappAsaas);
+    }
+
+    function renderAdminOrders(list){
+      $('adminOrdersMeta').textContent = `${list.length} pedido(s) exibido(s).`;
+      const host = $('adminOrdersList');
+
+      if(!list.length){
+        host.innerHTML = '<div class="notice blue">Nenhum pedido encontrado com esses filtros.</div>';
+        return;
+      }
+
+      host.innerHTML = list.map(o => `
+        <div class="adminOrder">
+          <div>
+            <div class="adminOrderTitle">${esc(o.pedido)} • ${esc(o.nome)}</div>
+            <div class="adminOrderSub">${esc(o.publico)} • ${esc(o.turmaSetor)}<br>${esc(o.modelo)} • ${esc(o.tamanho)} • ${money(o.valor)}</div>
+          </div>
+          <div>
+            <div class="adminOrderStatus">Pagamento: <strong>${esc(o.statusPagamento)}</strong></div>
+            <div class="adminOrderSub">${o.dataPagamento ? 'Pago em '+esc(o.dataPagamento) : esc(o.data)}</div>
+          </div>
+          <div>
+            <div class="adminOrderStatus">Produção: <strong>${esc(o.statusProducao)}</strong></div>
+            <div class="adminOrderSub">${o.prazoPrevistoFormatado ? 'Previsão '+esc(o.prazoPrevistoFormatado) : 'Sem previsão'}</div>
+          </div>
+          <div>
+            <div class="adminOrderStatus">Entrega: <strong>${esc(o.statusEntrega)}</strong></div>
+            <div class="adminOrderSub">${o.ultimaAtualizacao ? esc(o.ultimaAtualizacao) : ''}</div>
+          </div>
+          <div>
+            <button class="btn secondary" type="button" data-admin-edit="${attr(o.pedido)}">GERENCIAR</button>
+          </div>
+        </div>
+      `).join('');
+
+      host.querySelectorAll('[data-admin-edit]').forEach(btn => {
+        btn.addEventListener('click', () => openAdminEditor(btn.dataset.adminEdit));
+      });
+    }
+
+    ['admFilterPublic','admFilterPayment','admFilterProduction','admFilterDelivery'].forEach(id => {
+      $(id).addEventListener('change', loadAdminData);
+    });
+
+    $('admSearch').addEventListener('input', () => {
+      clearTimeout(adminSearchTimer);
+      adminSearchTimer = setTimeout(loadAdminData, 350);
+    });
+
+    $('admRefreshBtn').addEventListener('click', loadAdminData);
+
+    $('adminSaveSettingsBtn').addEventListener('click', () => {
+      const btn = $('adminSaveSettingsBtn');
+      btn.disabled = true;
+
+      const payload = {
+        vendasEstudantes:$('admSalesStudents').value,
+        vendasServidores:$('admSalesServers').value,
+        loteEstudantes:$('admLotStudents').value,
+        loteServidores:$('admLotServers').value,
+        prazoPadrao:$('admDefaultDays').value,
+        emailsAutomaticos:$('admAutoEmail').checked,
+        notificacoesAsaas:$('admAsaasNotify').checked,
+        smsAsaas:$('admSms').checked,
+        whatsappAsaas:$('admWaAsaas').checked
+      };
+
+      google.script.run
+        .withSuccessHandler(() => {
+          btn.disabled=false;
+          btn.textContent='SALVO ✓';
+          setTimeout(()=>btn.textContent='SALVAR CONFIGURAÇÕES',1500);
+          loadAdminData();
+        })
+        .withFailureHandler(err => {
+          btn.disabled=false;
+          alert(err.message || 'Erro ao salvar configurações.');
+        })
+        .adminUpdateSettings(getAdminToken(), payload);
+    });
+
+    function openAdminEditor(pedido){
+      const o = adminOrdersCache.find(x => x.pedido === pedido);
+      if(!o) return;
+
+      $('adminEditTitle').textContent = o.pedido;
+      $('adminEditTitle').dataset.pedido = o.pedido;
+      $('adminEditSummary').innerHTML =
+        `<strong>${esc(o.nome)}</strong> • ${esc(o.publico)} • ${esc(o.turmaSetor)}<br>`+
+        `${esc(o.modelo)} • Tamanho ${esc(o.tamanho)} • ${money(o.valor)}<br>`+
+        `${o.email ? 'E-mail: '+esc(o.email)+' • ' : ''}WhatsApp: ${esc(o.whatsapp || '')}`;
+
+      $('adminEditProduction').value = o.statusProducao || 'NÃO ENVIADO';
+      $('adminEditDelivery').value = o.statusEntrega || 'NÃO ENTREGUE';
+      $('adminEditDeadline').value = o.prazoPrevisto || '';
+      $('adminEditPayment').value = o.statusPagamento || '';
+      $('adminEditClientMessage').value = o.mensagemCliente || '';
+      $('adminEditInternalNote').value = o.observacaoInterna || '';
+      $('adminEditNotify').checked = true;
+      $('adminEditFeedback').textContent = '';
+      $('adminEditWhatsapp').classList.add('hidden');
+      $('adminEditorModal').classList.remove('hidden');
+      loadAdminHistory(o.pedido);
+    }
+
+    function loadAdminHistory(pedido){
+      $('adminHistory').textContent = 'Carregando histórico...';
+      google.script.run
+        .withSuccessHandler(items => {
+          if(!items || !items.length){
+            $('adminHistory').innerHTML = '<div class="muted">Ainda não há eventos registrados para este pedido.</div>';
+            return;
+          }
+          $('adminHistory').innerHTML = items.map(i => `
+            <div class="historyItem">
+              <strong>${esc(i.acao)} • ${esc(i.data)}</strong>
+              <span>${esc(i.origem)}${i.detalhes ? ' — '+esc(i.detalhes) : ''}</span>
+            </div>
+          `).join('');
+        })
+        .withFailureHandler(() => $('adminHistory').textContent = 'Não foi possível carregar o histórico.')
+        .adminGetOrderHistory(getAdminToken(), pedido);
+    }
+
+    $('adminEditorClose').addEventListener('click', () => $('adminEditorModal').classList.add('hidden'));
+    $('adminEditorModal').addEventListener('click', e => {
+      if(e.target === $('adminEditorModal')) $('adminEditorModal').classList.add('hidden');
+    });
+
+    $('adminEditSave').addEventListener('click', () => {
+      const pedido = $('adminEditTitle').dataset.pedido;
+      const btn = $('adminEditSave');
+      btn.disabled = true;
+      $('adminEditFeedback').textContent = 'Salvando...';
+
+      const payload = {
+        pedido,
+        statusProducao:$('adminEditProduction').value,
+        statusEntrega:$('adminEditDelivery').value,
+        prazoPrevisto:$('adminEditDeadline').value,
+        mensagemCliente:$('adminEditClientMessage').value,
+        observacaoInterna:$('adminEditInternalNote').value,
+        notificarCliente:$('adminEditNotify').checked
+      };
+
+      google.script.run
+        .withSuccessHandler(res => {
+          btn.disabled=false;
+          $('adminEditFeedback').textContent = res.emailEnviado
+            ? 'Atualização salva e e-mail enviado ao cliente.'
+            : 'Atualização salva.';
+
+          if(res.whatsappUrl){
+            $('adminEditWhatsapp').href = res.whatsappUrl;
+            $('adminEditWhatsapp').classList.remove('hidden');
+          }
+
+          loadAdminData();
+          loadAdminHistory(pedido);
+        })
+        .withFailureHandler(err => {
+          btn.disabled=false;
+          $('adminEditFeedback').textContent = err.message || 'Erro ao atualizar o pedido.';
+        })
+        .adminUpdateOrder(getAdminToken(), payload);
+    });
+
+    $('adminEditResendEmail').addEventListener('click', () => {
+      const pedido = $('adminEditTitle').dataset.pedido;
+      const btn = $('adminEditResendEmail');
+      btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(res => {
+          btn.disabled=false;
+          $('adminEditFeedback').textContent = res.enviado ? 'E-mail reenviado.' : 'Não foi possível enviar: confira se há e-mail cadastrado e se os e-mails automáticos estão ativos.';
+        })
+        .withFailureHandler(err => {
+          btn.disabled=false;
+          $('adminEditFeedback').textContent = err.message || 'Erro ao reenviar e-mail.';
+        })
+        .adminResendStatusEmail(getAdminToken(), pedido);
+    });
+
+    function esc(v){
+      return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    function attr(v){ return esc(v); }
+
+    init();
+  </script>
+</body>
+</html>
