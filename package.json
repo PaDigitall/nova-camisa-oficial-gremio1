@@ -1,0 +1,8 @@
+{
+  "name": "loja-digital-gremio-paa",
+  "version": "7.2.8",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

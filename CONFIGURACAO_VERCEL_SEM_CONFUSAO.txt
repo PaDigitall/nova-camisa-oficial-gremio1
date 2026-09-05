@@ -1,0 +1,48 @@
+LOJA DIGITAL DO GRÊMIO — VERCEL v7.2.8
+
+O ERRO 404 NOT_FOUND DA VERCEL NÃO É ERRO DE CHAVE.
+Ele aparece quando a Vercel não recebeu os arquivos/rotas do projeto.
+
+ARQUIVOS QUE DEVEM FICAR NA RAIZ DO PROJETO:
+- index.html
+- vercel.json
+- package.json
+- .env.example
+- pasta api/
+
+VARIÁVEIS DE AMBIENTE — CRIE UMA POR UMA:
+
+1) NAME
+APPS_SCRIPT_API_URL
+VALUE
+https://script.google.com/macros/s/SEU_DEPLOYMENT_ID/exec
+
+2) NAME
+APPS_SCRIPT_PROXY_SECRET
+VALUE
+<cole somente o segredo gerado no Apps Script>
+
+3) NAME
+ASAAS_WEBHOOK_TOKEN
+VALUE
+<cole somente o token do webhook gerado no Apps Script>
+
+NÃO FAÇA:
+- Não escreva APPS_SCRIPT_API_URL=https://... no campo Name.
+- Não coloque espaços antes/depois.
+- Não use ASAAS_API_KEY na Vercel.
+- Não envie estes segredos para o GitHub.
+
+TESTE DEPOIS DO DEPLOY:
+https://SEU-DOMINIO.vercel.app/api/health
+
+Resultado esperado:
+{
+  "ok": true,
+  "apiUrlConfigured": true,
+  "proxySecretConfigured": true,
+  "webhookTokenConfigured": true
+}
+
+Se /api/health também der 404, os arquivos ainda não foram publicados corretamente.
+Se /api/health abrir e algum campo estiver false, aí sim é variável de ambiente faltando.
