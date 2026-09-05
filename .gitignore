@@ -1,0 +1,15 @@
+# Credenciais OAuth locais do clasp
+.clasprc.json
+**/.clasprc.json
+
+# Dependências locais
+node_modules/
+
+# Segredos/ambiente local
+.env
+.env.*
+!.env.example
+
+# Arquivos temporários
+.DS_Store
+Thumbs.db
