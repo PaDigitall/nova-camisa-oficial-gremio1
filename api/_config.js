@@ -1,8 +1,11 @@
-export const APP_VERSION = '7.2.8';
+export const APP_VERSION = '7.6.1';
 export const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJnfhx5RS1gFnpPnFV9e2PdhQpq1gqoDXo4rOFVyHMjZ0PqisUAEWAyPUPBRNOH0pf/exec';
 
 export function appsScriptUrl() {
-  return String(process.env.APPS_SCRIPT_API_URL || DEFAULT_APPS_SCRIPT_URL).trim();
+  // O site público e a implantação automática do GitHub precisam apontar
+  // sempre para a MESMA implantação do Apps Script. Ignoramos overrides antigos
+  // de ambiente para evitar carregar uma versão diferente/stale da loja.
+  return DEFAULT_APPS_SCRIPT_URL;
 }
 
 export function proxySecret() {
