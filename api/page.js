@@ -29,6 +29,8 @@ function buildAppsScriptUrl(requestUrl, base) {
 
   target.searchParams.set('p', safePage(incoming.searchParams.get('p')));
   target.searchParams.set('_host', 'vercel');
+  // Quebra cache do iframe sempre que o bridge muda de versão.
+  target.searchParams.set('_build', APP_VERSION);
   return target.toString();
 }
 
