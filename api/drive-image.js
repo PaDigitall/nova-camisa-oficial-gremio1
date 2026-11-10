@@ -48,6 +48,24 @@ export default {
           continue;
         }
 
+        const sourceHost = new URL(source).hostname;
+        if (url.searchParams.get('diag') === '1') {
+          return new Response(JSON.stringify({
+            ok: true,
+            version: APP_VERSION,
+            id,
+            mime: type,
+            bytes: bytes.byteLength,
+            source: sourceHost
+          }), {
+            status: 200,
+            headers: {
+              'content-type': 'application/json; charset=utf-8',
+              'cache-control': 'no-store'
+            }
+          });
+        }
+
         return new Response(bytes, {
           status: 200,
           headers: {
@@ -57,7 +75,7 @@ export default {
             'x-content-type-options': 'nosniff',
             'access-control-allow-origin': '*',
             'x-logo-proxy': 'gei-drive',
-            'x-logo-source': new URL(source).hostname
+            'x-logo-source': sourceHost
           }
         });
       } catch (err) {
