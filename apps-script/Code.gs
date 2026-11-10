@@ -23,7 +23,7 @@ const CFG = {
   PAGE_DEFAULT: 'estudantes',
   ADMIN_CACHE_PREFIX: 'CAMISAS_ADMIN_SESSION_',
   ADMIN_SESSION_SECONDS: 21600,
-  COMMERCE_VERSION: '7.6.4',
+  COMMERCE_VERSION: '7.6.5',
   CARD_MAX_INSTALLMENTS: 12,
   CARD_MIN_INSTALLMENT_VALUE: 5
 };
@@ -1760,11 +1760,31 @@ function getPublicData_() {
 }
 
 
-function getDrivePublicImageUrl_(fileId, width) {
+function getDriveThumbnailDataUri_(fileId, width) {
   const id = String(fileId || '').trim();
   if (!id) return '';
-  const w = Math.max(64, Math.min(1600, Number(width || 512)));
-  return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + w;
+  const w = Math.max(64, Math.min(1200, Number(width || 384)));
+
+  // Busca uma versão reduzida no próprio servidor do Google e entrega como
+  // data URI. O navegador não precisa acessar o Drive diretamente.
+  try {
+    const url = 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + w;
+    const res = UrlFetchApp.fetch(url, {
+      muteHttpExceptions:true,
+      followRedirects:true,
+      headers:{ 'User-Agent':'Mozilla/5.0' }
+    });
+    const code = Number(res.getResponseCode() || 0);
+    const blob = res.getBlob();
+    const mime = String(blob.getContentType() || '').toLowerCase();
+    if (code >= 200 && code < 300 && mime.indexOf('image/') === 0) {
+      return 'data:' + mime + ';base64,' + Utilities.base64Encode(blob.getBytes());
+    }
+  } catch (_) {}
+
+  // Fallback robusto: como o arquivo está compartilhado, tenta o caminho
+  // padrão de imagem/arquivo já usado pelas outras marcas do cabeçalho.
+  return getLogoDataUri_(id);
 }
 
 function getLogosPublicas() {
@@ -1773,9 +1793,7 @@ function getLogosPublicas() {
   const gremioId = String(cfg['ID da logo do Grêmio'] || '').trim();
   return {
     escola: getLogoDataUri_(cfg['ID da logo da escola'] || legacyLogoId),
-    // A marca do GEI é pública no Drive. Usar URL de thumbnail evita transportar
-    // vários MB em Base64 pelo Apps Script e elimina o ponto de falha da logo.
-    gremio: gremioId ? getDrivePublicImageUrl_(gremioId, 512) : '',
+    gremio: gremioId ? getDriveThumbnailDataUri_(gremioId, 384) : '',
     projeto: getLogoDataUri_(cfg['ID da logo do projeto'])
   };
 }
