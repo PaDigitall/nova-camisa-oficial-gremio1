@@ -1606,7 +1606,7 @@
           <div class="adminLogin">
             <div>
               <label>Seu nome *</label>
-              <input id="adminName" placeholder="Ex.: Paulo Vinícius" autocomplete="name">
+              <input id="adminName" placeholder="Coloque seu nome" autocomplete="name">
             </div>
             <div>
               <label>Código de acesso *</label>
@@ -1832,6 +1832,8 @@
         </div>
         <div class="full adminEditActions">
           <button id="adminEditSave" type="button" class="btn primary">SALVAR ATUALIZAÇÃO</button>
+          <button id="adminEditCancel" type="button" class="btn secondary" style="background:#fff4f2;color:#9f2e25;border-color:#efc2bd">CANCELAR PEDIDO</button>
+          <button id="adminEditRefund" type="button" class="btn secondary" style="background:#fff8e6;color:#7a5600;border-color:#ead59a">REGISTRAR REEMBOLSO</button>
           <a id="adminEditWhatsapp" class="btn whatsappBtn hidden" target="_blank" rel="noopener" style="text-decoration:none">ABRIR WHATSAPP</a>
           <button id="adminEditResendEmail" type="button" class="btn secondary">REENVIAR E-MAIL</button>
         </div>
@@ -2069,37 +2071,39 @@
     }
 
     function setupLogos(){
-      // 1) Mostra IMEDIATAMENTE previews ultraleves embutidos no HTML.
-      // Assim nunca fica só o quadradinho "PA" esperando as imagens pesadas.
-      renderLogos(PREVIEW_LOGOS);
-
       const ids = BOOT.logos || {};
-      const signature = [ids.escolaId || '', ids.gremioId || '', ids.projetoId || ''].join('|');
-      const cacheKey = 'camisas_logos_v64_' + signature;
+      const LEGACY_GREMIO_PREVIEW_ID = '1n0-4Kuy7x1iWD7ARb-mBch2fuyzXx4tR';
+      const previews = {
+        escola: PREVIEW_LOGOS.escola,
+        gremio: (!ids.gremioId || ids.gremioId === LEGACY_GREMIO_PREVIEW_ID) ? PREVIEW_LOGOS.gremio : '',
+        projeto: PREVIEW_LOGOS.projeto
+      };
 
-      // 2) Se este aparelho já tem as versões leves em cache, troca na mesma hora.
+      renderLogos(previews);
+
+      const signature = [ids.escolaId || '', ids.gremioId || '', ids.projetoId || ''].join('|');
+      const cacheKey = 'camisas_logos_v762_' + signature;
+
       try{
         const cached = localStorage.getItem(cacheKey);
         if(cached){
           const parsed = JSON.parse(cached);
           renderLogos({
-            escola: parsed.escola || PREVIEW_LOGOS.escola,
-            gremio: parsed.gremio || PREVIEW_LOGOS.gremio,
-            projeto: parsed.projeto || PREVIEW_LOGOS.projeto
+            escola: parsed.escola || previews.escola,
+            gremio: parsed.gremio || previews.gremio,
+            projeto: parsed.projeto || previews.projeto
           });
-          return;
         }
       }catch(_){}
 
-      // 3) Busca as originais em segundo plano, SEM bloquear a página.
       const load = () => {
         google.script.run
           .withSuccessHandler(async data => {
             try{
               const optimized = {
-                escola: (await optimizeLogoForBrowser(data && data.escola)) || PREVIEW_LOGOS.escola,
-                gremio: (await optimizeLogoForBrowser(data && data.gremio)) || PREVIEW_LOGOS.gremio,
-                projeto: (await optimizeLogoForBrowser(data && data.projeto)) || PREVIEW_LOGOS.projeto
+                escola: (await optimizeLogoForBrowser(data && data.escola)) || previews.escola,
+                gremio: (await optimizeLogoForBrowser(data && data.gremio)) || previews.gremio,
+                projeto: (await optimizeLogoForBrowser(data && data.projeto)) || previews.projeto
               };
 
               renderLogos(optimized);
@@ -2112,14 +2116,12 @@
               }catch(_){}
             }catch(err){
               console.warn('[Loja Digital do Grêmio] Falha ao otimizar logos:', err);
-              // Mantém os previews — não volta para o símbolo PA.
-              renderLogos(PREVIEW_LOGOS);
+              renderLogos(previews);
             }
           })
           .withFailureHandler(err => {
             console.warn('[Loja Digital do Grêmio] Logos completas não carregadas:', err);
-            // Mantém os previews — a interface continua bonita.
-            renderLogos(PREVIEW_LOGOS);
+            renderLogos(previews);
           })
           .getLogosPublicas();
       };
@@ -3727,6 +3729,17 @@
       $('adminEditDelivery').value = o.statusEntrega || 'NÃO ENTREGUE';
       $('adminEditDeadline').value = o.prazoPrevisto || '';
       $('adminEditPayment').value = o.statusPagamento || '';
+      const payStatus = String(o.statusPagamento || '').toUpperCase();
+      const cancelBtn = $('adminEditCancel');
+      const refundBtn = $('adminEditRefund');
+      if(cancelBtn){
+        cancelBtn.disabled = ['PAGO','CONFIRMADO','ESTORNADO','CONTESTADO','CANCELADO'].includes(payStatus);
+        cancelBtn.textContent = payStatus === 'CANCELADO' ? 'CANCELADO ✓' : 'CANCELAR PEDIDO';
+      }
+      if(refundBtn){
+        refundBtn.disabled = !['PAGO','CONFIRMADO'].includes(payStatus);
+        refundBtn.textContent = payStatus === 'ESTORNADO' ? 'REEMBOLSADO ✓' : 'REGISTRAR REEMBOLSO';
+      }
       $('adminEditClientMessage').value = o.mensagemCliente || '';
       $('adminEditInternalNote').value = o.observacaoInterna || '';
       $('adminEditNotify').checked = true;
@@ -3802,6 +3815,66 @@
           $('adminEditFeedback').textContent = err.message || 'Erro ao atualizar o pedido.';
         })
         .adminUpdateOrder(getAdminToken(), payload);
+    });
+
+    $('adminEditCancel').addEventListener('click', () => {
+      const pedido = $('adminEditTitle').dataset.pedido;
+      if(!pedido) return;
+      if(!confirm('Cancelar ' + pedido + '? Se houver cobrança não paga ativa no Asaas, ela será encerrada. O pedido continuará no histórico como CANCELADO.')) return;
+
+      const btn = $('adminEditCancel');
+      btn.disabled = true;
+      $('adminEditFeedback').textContent = 'Cancelando pedido...';
+
+      google.script.run
+        .withSuccessHandler(res => {
+          $('adminEditPayment').value = res.statusPagamento || 'CANCELADO';
+          btn.textContent = 'CANCELADO ✓';
+          btn.disabled = true;
+          $('adminEditRefund').disabled = true;
+          $('adminEditFeedback').textContent = res.mensagem || 'Pedido cancelado.';
+          loadAdminData();
+          loadAdminHistory(pedido);
+        })
+        .withFailureHandler(err => {
+          btn.disabled = false;
+          $('adminEditFeedback').textContent = err.message || 'Erro ao cancelar o pedido.';
+        })
+        .adminCancelOrder(getAdminToken(), {
+          pedido,
+          notificarCliente:$('adminEditNotify').checked,
+          mensagemCliente:'Este pedido foi cancelado pelo Grêmio. Caso queira realizar uma nova compra, faça um novo pedido no site.'
+        });
+    });
+
+    $('adminEditRefund').addEventListener('click', () => {
+      const pedido = $('adminEditTitle').dataset.pedido;
+      if(!pedido) return;
+      if(!confirm('ATENÇÃO: esta opção NÃO envia dinheiro. Use somente depois que o valor já tiver sido devolvido ao comprador (ex.: Pix manual). Registrar o reembolso de ' + pedido + ' no sistema?')) return;
+
+      const btn = $('adminEditRefund');
+      btn.disabled = true;
+      $('adminEditFeedback').textContent = 'Registrando reembolso...';
+
+      google.script.run
+        .withSuccessHandler(res => {
+          $('adminEditPayment').value = res.statusPagamento || 'ESTORNADO';
+          btn.textContent = 'REEMBOLSADO ✓';
+          btn.disabled = true;
+          $('adminEditCancel').disabled = true;
+          $('adminEditFeedback').textContent = (res.mensagem || 'Reembolso registrado.') + ' Nenhuma movimentação financeira foi feita pelo sistema.';
+          loadAdminData();
+          loadAdminHistory(pedido);
+        })
+        .withFailureHandler(err => {
+          btn.disabled = false;
+          $('adminEditFeedback').textContent = err.message || 'Erro ao registrar o reembolso.';
+        })
+        .adminRegisterManualRefund(getAdminToken(), {
+          pedido,
+          notificarCliente:false,
+          observacao:'Reembolso integral confirmado manualmente pelo Grêmio.'
+        });
     });
 
     $('adminEditResendEmail').addEventListener('click', () => {
