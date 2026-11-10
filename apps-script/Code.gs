@@ -634,6 +634,40 @@ function upsertConfigValue_(campo, valor) {
   return true;
 }
 
+function atualizarDashboardPorLotes_() {
+  const sh = SpreadsheetApp.getActive().getSheetByName('Dashboard');
+  if (!sh) return false;
+
+  sh.getRange('A2').setFormula('="Nossa Escola, Nossa Identidade • GEI • "&\'Configurações\'!B7&" / "&\'Configurações\'!B8');
+  sh.getRange('B4').setFormula('=COUNTIFS(Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"PAGO")+COUNTIFS(Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"CONFIRMADO")+COUNTIFS(Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"PAGO")+COUNTIFS(Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"CONFIRMADO")');
+  sh.getRange('D4').setFormula('=COUNTIFS(Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"AGUARDANDO PAGAMENTO")+COUNTIFS(Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"AGUARDANDO PAGAMENTO")');
+  sh.getRange('F4').setFormula('=SUMIFS(Pedidos!N:N;Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!N:N;Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"CONFIRMADO")+SUMIFS(Pedidos!N:N;Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!N:N;Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"CONFIRMADO")');
+  sh.getRange('H4').setFormula('=SUMIFS(Pedidos!R:R;Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!R:R;Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"CONFIRMADO")+SUMIFS(Pedidos!R:R;Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!R:R;Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"CONFIRMADO")');
+  sh.getRange('J4').setFormula('=SUMIFS(Pedidos!O:O;Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!O:O;Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"CONFIRMADO")+SUMIFS(Pedidos!O:O;Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!O:O;Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"CONFIRMADO")');
+
+  sh.getRange('A6').setValue('RESUMO POR TAMANHO — LOTES ATUAIS • PAGOS/CONFIRMADOS');
+  for (let row = 8; row <= 17; row++) {
+    sh.getRange(row, 2).setFormula(
+      '=COUNTIFS(Pedidos!J:J;A' + row + ';Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"PAGO")'
+      + '+COUNTIFS(Pedidos!J:J;A' + row + ';Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"CONFIRMADO")'
+      + '+COUNTIFS(Pedidos!J:J;A' + row + ';Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"PAGO")'
+      + '+COUNTIFS(Pedidos!J:J;A' + row + ';Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"CONFIRMADO")'
+    );
+  }
+
+  sh.getRange('B20').setFormula('=COUNTIFS(Pedidos!M:M;\'Configurações\'!B7;Pedidos!C:C;"ESTUDANTE";Pedidos!S:S;"PAGO")+COUNTIFS(Pedidos!M:M;\'Configurações\'!B7;Pedidos!C:C;"ESTUDANTE";Pedidos!S:S;"CONFIRMADO")');
+  sh.getRange('C20').setFormula('=SUMIFS(Pedidos!N:N;Pedidos!M:M;\'Configurações\'!B7;Pedidos!C:C;"ESTUDANTE";Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!N:N;Pedidos!M:M;\'Configurações\'!B7;Pedidos!C:C;"ESTUDANTE";Pedidos!S:S;"CONFIRMADO")');
+  sh.getRange('D20').setFormula('=SUMIFS(Pedidos!Q:Q;Pedidos!M:M;\'Configurações\'!B7;Pedidos!C:C;"ESTUDANTE";Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!Q:Q;Pedidos!M:M;\'Configurações\'!B7;Pedidos!C:C;"ESTUDANTE";Pedidos!S:S;"CONFIRMADO")');
+  sh.getRange('E20').setFormula('=SUMIFS(Pedidos!R:R;Pedidos!M:M;\'Configurações\'!B7;Pedidos!C:C;"ESTUDANTE";Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!R:R;Pedidos!M:M;\'Configurações\'!B7;Pedidos!C:C;"ESTUDANTE";Pedidos!S:S;"CONFIRMADO")');
+
+  sh.getRange('B21').setFormula('=COUNTIFS(Pedidos!M:M;\'Configurações\'!B8;Pedidos!C:C;"SERVIDOR";Pedidos!S:S;"PAGO")+COUNTIFS(Pedidos!M:M;\'Configurações\'!B8;Pedidos!C:C;"SERVIDOR";Pedidos!S:S;"CONFIRMADO")');
+  sh.getRange('C21').setFormula('=SUMIFS(Pedidos!N:N;Pedidos!M:M;\'Configurações\'!B8;Pedidos!C:C;"SERVIDOR";Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!N:N;Pedidos!M:M;\'Configurações\'!B8;Pedidos!C:C;"SERVIDOR";Pedidos!S:S;"CONFIRMADO")');
+  sh.getRange('D21').setFormula('=SUMIFS(Pedidos!Q:Q;Pedidos!M:M;\'Configurações\'!B8;Pedidos!C:C;"SERVIDOR";Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!Q:Q;Pedidos!M:M;\'Configurações\'!B8;Pedidos!C:C;"SERVIDOR";Pedidos!S:S;"CONFIRMADO")');
+  sh.getRange('E21').setFormula('=SUMIFS(Pedidos!R:R;Pedidos!M:M;\'Configurações\'!B8;Pedidos!C:C;"SERVIDOR";Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!R:R;Pedidos!M:M;\'Configurações\'!B8;Pedidos!C:C;"SERVIDOR";Pedidos!S:S;"CONFIRMADO")');
+
+  return true;
+}
+
 function configurarSistema() {
   const ss = SpreadsheetApp.getActive();
   ss.setSpreadsheetTimeZone('America/Fortaleza');
@@ -646,6 +680,7 @@ function configurarSistema() {
   validarCabecalhoPedidos_();
   aplicarFormatacaoPedidos_();
   aplicarValidacoesPedidos_();
+  atualizarDashboardPorLotes_();
   configurarCommerceCore_();
   finalizarLojaDigital();
   garantirSheetEventosAsaas_();
@@ -3428,7 +3463,7 @@ function adminActivateLot(token, payload) {
   const sh = getLotsSheet_();
   const publico = normalizeLotPublic_(sh.getRange(row,2).getDisplayValue());
   const status = String(sh.getRange(row,3).getDisplayValue() || '').toUpperCase();
-  if (status === 'ENCERRADO') throw new Error('Um lote encerrado não pode ser reativado. Crie um novo lote.');
+  if (['FECHADO','ENCERRADO','CONCLUÍDO'].includes(status)) throw new Error('Um lote fechado não pode ser reativado. Crie um novo lote.');
   const cfg = getConfigMap_();
   const keyLot = publico === 'ESTUDANTE' ? 'Lote atual estudantes' : 'Lote atual servidores';
   const keySales = publico === 'ESTUDANTE' ? 'Vendas estudantes' : 'Vendas servidores';
@@ -3437,8 +3472,8 @@ function adminActivateLot(token, payload) {
     const oldRow = findLotRow_(old);
     if (oldRow) {
       const oldStatus = String(sh.getRange(oldRow,3).getDisplayValue() || '').toUpperCase();
-      if (oldStatus !== 'ENCERRADO') {
-        sh.getRange(oldRow,3).setValue('ENCERRADO');
+      if (!['FECHADO','ENCERRADO','CONCLUÍDO'].includes(oldStatus)) {
+        sh.getRange(oldRow,3).setValue('FECHADO');
         if (!sh.getRange(oldRow,5).getValue()) sh.getRange(oldRow,5).setValue(new Date()).setNumberFormat('dd/MM/yyyy');
       }
     }
@@ -3461,11 +3496,11 @@ function adminCloseLot(token, payload) {
   const publico = normalizeLotPublic_(sh.getRange(row,2).getDisplayValue());
   const cfg = getConfigMap_();
   const current = String(cfg[publico === 'ESTUDANTE' ? 'Lote atual estudantes' : 'Lote atual servidores'] || '').trim().toUpperCase();
-  sh.getRange(row,3).setValue('ENCERRADO');
+  sh.getRange(row,3).setValue('FECHADO');
   if (!sh.getRange(row,5).getValue()) sh.getRange(row,5).setValue(new Date()).setNumberFormat('dd/MM/yyyy');
   if (current === codigo) setConfigValue_(publico === 'ESTUDANTE' ? 'Vendas estudantes' : 'Vendas servidores', 'FECHADAS');
-  sh.getRange(row,12).setValue(`Encerrado em ${Utilities.formatDate(new Date(),'America/Fortaleza','dd/MM/yyyy HH:mm')} por ${session.nome}.`);
-  registrarLog_('LOTE ENCERRADO', '', session.nome, `${codigo} • ${publico}`);
+  sh.getRange(row,12).setValue(`Fechado em ${Utilities.formatDate(new Date(),'America/Fortaleza','dd/MM/yyyy HH:mm')} por ${session.nome}.`);
+  registrarLog_('LOTE FECHADO', '', session.nome, `${codigo} • ${publico}`);
   return adminGetLots(token);
 }
 
