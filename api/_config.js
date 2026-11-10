@@ -1,4 +1,4 @@
-export const APP_VERSION = '7.6.1';
+export const APP_VERSION = '7.6.6';
 export const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJnfhx5RS1gFnpPnFV9e2PdhQpq1gqoDXo4rOFVyHMjZ0PqisUAEWAyPUPBRNOH0pf/exec';
 
 export function appsScriptUrl() {
