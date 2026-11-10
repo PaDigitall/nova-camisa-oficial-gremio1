@@ -23,7 +23,7 @@ const CFG = {
   PAGE_DEFAULT: 'estudantes',
   ADMIN_CACHE_PREFIX: 'CAMISAS_ADMIN_SESSION_',
   ADMIN_SESSION_SECONDS: 21600,
-  COMMERCE_VERSION: '7.6.5',
+  COMMERCE_VERSION: '7.6.6',
   CARD_MAX_INSTALLMENTS: 12,
   CARD_MIN_INSTALLMENT_VALUE: 5
 };
@@ -1791,9 +1791,16 @@ function getLogosPublicas() {
   const cfg = getConfigMap_();
   const legacyLogoId = cfg['ID do arquivo da logo no Google Drive'] || '';
   const gremioId = String(cfg['ID da logo do Grêmio'] || '').trim();
+  const publicBase = String(getPublicSiteUrl_() || '').replace(/\/+$/, '');
+  const gremioProxyUrl = gremioId && publicBase
+    ? publicBase + '/api/drive-image?id=' + encodeURIComponent(gremioId) + '&w=384&v=' + encodeURIComponent(CFG.COMMERCE_VERSION)
+    : '';
+
   return {
     escola: getLogoDataUri_(cfg['ID da logo da escola'] || legacyLogoId),
-    gremio: gremioId ? getDriveThumbnailDataUri_(gremioId, 384) : '',
+    // O GEI usa o proxy da Vercel para não depender do UrlFetchApp/DriveApp.
+    // O ID continua vindo da planilha; trocar a logo não exige editar código.
+    gremio: gremioProxyUrl,
     projeto: getLogoDataUri_(cfg['ID da logo do projeto'])
   };
 }
