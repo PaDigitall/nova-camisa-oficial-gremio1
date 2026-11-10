@@ -23,7 +23,7 @@ const CFG = {
   PAGE_DEFAULT: 'estudantes',
   ADMIN_CACHE_PREFIX: 'CAMISAS_ADMIN_SESSION_',
   ADMIN_SESSION_SECONDS: 21600,
-  COMMERCE_VERSION: '7.6.0',
+  COMMERCE_VERSION: '7.6.2',
   CARD_MAX_INSTALLMENTS: 12,
   CARD_MIN_INSTALLMENT_VALUE: 5
 };
@@ -492,6 +492,12 @@ function executarRpcVercel_(method, args) {
     },
     adminUpdateOrder: function() {
       return adminUpdateOrder(args[0], args[1] || {});
+    },
+    adminCancelOrder: function() {
+      return adminCancelOrder(args[0], args[1] || {});
+    },
+    adminRegisterManualRefund: function() {
+      return adminRegisterManualRefund(args[0], args[1] || {});
     },
     adminResendStatusEmail: function() {
       return adminResendStatusEmail(args[0], args[1]);
@@ -3124,6 +3130,151 @@ function adminUpdateOrder(token, payload) {
   };
 }
 
+
+/**
+ * Cancela um pedido que ainda não foi pago. Se existir cobrança ativa no Asaas,
+ * ela é removida para impedir pagamento posterior. O registro permanece na
+ * planilha e no histórico para auditoria.
+ */
+function adminCancelOrder(token, payload) {
+  const session = getAdminSession_(token);
+  const p = payload || {};
+  const pedido = String(p.pedido || '').trim().toUpperCase();
+  if (!pedido) throw new Error('Pedido inválido.');
+
+  const sh = SpreadsheetApp.getActive().getSheetByName(CFG.SHEET_PEDIDOS);
+  const rowIndex = localizarPedidoRow_(pedido);
+  if (!rowIndex) throw new Error('Pedido não encontrado.');
+
+  const row = sh.getRange(rowIndex, 1, 1, 38).getValues()[0];
+  const status = String(row[18] || '').trim().toUpperCase();
+  const paymentId = String(row[21] || '').trim();
+
+  if (status === 'CANCELADO') {
+    return { ok:true, pedido:pedido, statusPagamento:'CANCELADO', mensagem:'Pedido já estava cancelado.' };
+  }
+  if (['PAGO','CONFIRMADO','ESTORNADO','CONTESTADO'].includes(status)) {
+    throw new Error('Este pedido possui pagamento confirmado. Registre o reembolso antes de encerrar o pedido.');
+  }
+
+  if (paymentId) {
+    let payment = null;
+    try {
+      payment = asaasRequest_('/payments/' + encodeURIComponent(paymentId), 'get');
+    } catch (err) {
+      const msg = String(err && err.message || err || '');
+      if (!/404|não encontr|not found|deleted/i.test(msg)) throw err;
+    }
+
+    const asaasStatus = String(payment && payment.status || '').toUpperCase();
+    if (['RECEIVED','RECEIVED_IN_CASH','CONFIRMED'].includes(asaasStatus)) {
+      if (payment) aplicarPagamentoAsaasNaLinha_(rowIndex, payment, 'ADMIN - REVALIDAÇÃO ANTES DE CANCELAR');
+      throw new Error('O Asaas informa que esta cobrança foi paga/confirmada. Use a opção de reembolso.');
+    }
+
+    if (payment && asaasStatus !== 'DELETED') {
+      asaasRequest_('/payments/' + encodeURIComponent(paymentId), 'delete');
+    }
+  }
+
+  const agora = new Date();
+  const motivo = limparTexto_(p.motivo || 'Pedido cancelado pelo Grêmio.', 300);
+  const mensagem = limparTexto_(p.mensagemCliente || 'Este pedido foi cancelado pelo Grêmio. Caso queira realizar uma nova compra, faça um novo pedido no site.', 500);
+  const internaAtual = String(row[29] || '').trim();
+  const interna = [internaAtual, 'CANCELAMENTO ADMINISTRATIVO: ' + motivo + (paymentId ? ' • cobrança ' + paymentId + ' encerrada.' : '')]
+    .filter(Boolean).join(' | ').slice(0, 700);
+
+  sh.getRange(rowIndex, 19).setValue('CANCELADO');
+  sh.getRange(rowIndex, 20).setValue('NÃO ENVIADO');
+  sh.getRange(rowIndex, 21).setValue('NÃO ENTREGUE');
+  sh.getRange(rowIndex, 23).clearContent();
+  sh.getRange(rowIndex, 27).setValue(agora);
+  sh.getRange(rowIndex, 28).setValue(session.nome);
+  sh.getRange(rowIndex, 29).setValue(mensagem);
+  sh.getRange(rowIndex, 30).setValue(interna);
+
+  try {
+    atualizarPagamentoCommerce_(pedido, {
+      provedor:'ASAAS', idExterno:paymentId, tipo:String(row[32] || ''),
+      valor:Number(row[13] || 0), taxa:Number(row[14] || 0), liquido:Number(row[15] || 0),
+      status:'CANCELADO', link:'', pagoEm:''
+    });
+  } catch (err) {
+    registrarLog_('AVISO CANCELAMENTO CORE', pedido, session.nome, err.message || String(err));
+  }
+
+  registrarLog_('PEDIDO CANCELADO', pedido, session.nome, motivo);
+
+  let emailEnviado=false, whatsappEnviado=false;
+  if (p.notificarCliente !== false) {
+    try { emailEnviado = enviarEmailAtualizacaoPedido_(rowIndex, mensagem); } catch (err) { registrarLog_('AVISO E-MAIL CANCELAMENTO',pedido,session.nome,err.message); }
+    try { whatsappEnviado = enviarWhatsAppAtualizacaoPedido_(rowIndex, mensagem); } catch (err) { registrarLog_('AVISO WHATSAPP CANCELAMENTO',pedido,session.nome,err.message); }
+  }
+
+  return { ok:true, pedido:pedido, statusPagamento:'CANCELADO', emailEnviado:emailEnviado, whatsappEnviado:whatsappEnviado, mensagem:'Pedido cancelado e preservado no histórico.' };
+}
+
+/**
+ * Registra no sistema um reembolso que JÁ FOI realizado manualmente pelo Grêmio
+ * (por exemplo, via Pix). Esta função NÃO movimenta dinheiro no Asaas.
+ */
+function adminRegisterManualRefund(token, payload) {
+  const session = getAdminSession_(token);
+  const p = payload || {};
+  const pedido = String(p.pedido || '').trim().toUpperCase();
+  if (!pedido) throw new Error('Pedido inválido.');
+
+  const sh = SpreadsheetApp.getActive().getSheetByName(CFG.SHEET_PEDIDOS);
+  const rowIndex = localizarPedidoRow_(pedido);
+  if (!rowIndex) throw new Error('Pedido não encontrado.');
+
+  const row = sh.getRange(rowIndex, 1, 1, 38).getValues()[0];
+  const status = String(row[18] || '').trim().toUpperCase();
+  if (status === 'ESTORNADO') {
+    return { ok:true, pedido:pedido, statusPagamento:'ESTORNADO', mensagem:'Reembolso já estava registrado.' };
+  }
+  if (!['PAGO','CONFIRMADO'].includes(status)) {
+    throw new Error('Só é possível registrar reembolso manual em pedido PAGO ou CONFIRMADO.');
+  }
+
+  const agora = new Date();
+  const valor = Number(row[13] || 0);
+  const mensagem = limparTexto_(p.mensagemCliente || ('Reembolso integral de ' + formatMoney_(valor) + ' registrado pelo Grêmio. Este pedido foi encerrado.'), 500);
+  const internaAtual = String(row[29] || '').trim();
+  const observacao = limparTexto_(p.observacao || 'Valor devolvido manualmente ao comprador.', 300);
+  const interna = [internaAtual, 'REEMBOLSO MANUAL: ' + formatMoney_(valor) + ' • ' + observacao]
+    .filter(Boolean).join(' | ').slice(0, 700);
+
+  sh.getRange(rowIndex, 19).setValue('ESTORNADO');
+  sh.getRange(rowIndex, 20).setValue('NÃO ENVIADO');
+  sh.getRange(rowIndex, 21).setValue('NÃO ENTREGUE');
+  sh.getRange(rowIndex, 23).clearContent();
+  sh.getRange(rowIndex, 27).setValue(agora);
+  sh.getRange(rowIndex, 28).setValue(session.nome);
+  sh.getRange(rowIndex, 29).setValue(mensagem);
+  sh.getRange(rowIndex, 30).setValue(interna);
+
+  try {
+    atualizarPagamentoCommerce_(pedido, {
+      provedor:'ASAAS', idExterno:String(row[21] || ''), tipo:String(row[32] || ''),
+      valor:valor, taxa:Number(row[14] || 0), liquido:Number(row[15] || 0),
+      status:'ESTORNADO', link:'', pagoEm:row[23] || ''
+    });
+  } catch (err) {
+    registrarLog_('AVISO REEMBOLSO CORE', pedido, session.nome, err.message || String(err));
+  }
+
+  registrarLog_('REEMBOLSO MANUAL REGISTRADO', pedido, session.nome, formatMoney_(valor) + ' • ' + observacao);
+
+  let emailEnviado=false, whatsappEnviado=false;
+  if (p.notificarCliente === true) {
+    try { emailEnviado = enviarEmailAtualizacaoPedido_(rowIndex, mensagem); } catch (err) { registrarLog_('AVISO E-MAIL REEMBOLSO',pedido,session.nome,err.message); }
+    try { whatsappEnviado = enviarWhatsAppAtualizacaoPedido_(rowIndex, mensagem); } catch (err) { registrarLog_('AVISO WHATSAPP REEMBOLSO',pedido,session.nome,err.message); }
+  }
+
+  return { ok:true, pedido:pedido, statusPagamento:'ESTORNADO', valor:valor, emailEnviado:emailEnviado, whatsappEnviado:whatsappEnviado, mensagem:'Reembolso manual registrado no histórico.' };
+}
+
 function getLotsSheet_() {
   const ss = SpreadsheetApp.getActive();
   let sh = ss.getSheetByName('Lotes');
@@ -3960,13 +4111,25 @@ function formatMoney_(value) {
 function getLogoDataUri_(fileId) {
   const id = String(fileId || '').trim();
   if (!id) return '';
+
   try {
     const blob = DriveApp.getFileById(id).getBlob();
     const mime = blob.getContentType() || 'image/png';
-    return `data:${mime};base64,${Utilities.base64Encode(blob.getBytes())}`;
-  } catch (err) {
-    return '';
-  }
+    return 'data:' + mime + ';base64,' + Utilities.base64Encode(blob.getBytes());
+  } catch (_) {}
+
+  try {
+    const url = 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(id);
+    const res = UrlFetchApp.fetch(url, { muteHttpExceptions:true, followRedirects:true });
+    const code = Number(res.getResponseCode() || 0);
+    const blob = res.getBlob();
+    const mime = String(blob.getContentType() || '').toLowerCase();
+    if (code >= 200 && code < 300 && mime.indexOf('image/') === 0) {
+      return 'data:' + mime + ';base64,' + Utilities.base64Encode(blob.getBytes());
+    }
+  } catch (_) {}
+
+  return '';
 }
 
 function registrarLog_(acao, pedido, origem, detalhes) {
