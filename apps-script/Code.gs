@@ -23,7 +23,7 @@ const CFG = {
   PAGE_DEFAULT: 'estudantes',
   ADMIN_CACHE_PREFIX: 'CAMISAS_ADMIN_SESSION_',
   ADMIN_SESSION_SECONDS: 21600,
-  COMMERCE_VERSION: '7.6.3',
+  COMMERCE_VERSION: '7.6.4',
   CARD_MAX_INSTALLMENTS: 12,
   CARD_MIN_INSTALLMENT_VALUE: 5
 };
@@ -140,7 +140,7 @@ function gerarRelacaoGrafica() {
     return;
   }
 
-  const ordemTamanhos = ['PP','P','M','G','GG','XGG','EXGG'];
+  const ordemTamanhos = ['PP','P','M','G','GG','EXG'];
   const rankTamanho = t => { const i = ordemTamanhos.indexOf(String(t || '').toUpperCase()); return i >= 0 ? i : 999; };
   const publicoPedido = id => String((pedidoMap[String(id).toUpperCase()] || {}).row?.[2] || '').trim().toUpperCase();
   const nomePedido = id => String((pedidoMap[String(id).toUpperCase()] || {}).row?.[3] || '').trim();
@@ -646,7 +646,9 @@ function atualizarDashboardPorLotes_() {
   sh.getRange('J4').setFormula('=SUMIFS(Pedidos!O:O;Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!O:O;Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"CONFIRMADO")+SUMIFS(Pedidos!O:O;Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"PAGO")+SUMIFS(Pedidos!O:O;Pedidos!M:M;\'Configurações\'!B8;Pedidos!S:S;"CONFIRMADO")');
 
   sh.getRange('A6').setValue('RESUMO POR TAMANHO — LOTES ATUAIS • PAGOS/CONFIRMADOS');
-  for (let row = 8; row <= 17; row++) {
+  sh.getRange('A8:A13').setValues([['PP'],['P'],['M'],['G'],['GG'],['EXG']]);
+  sh.getRange('A14:B17').clearContent();
+  for (let row = 8; row <= 13; row++) {
     sh.getRange(row, 2).setFormula(
       '=COUNTIFS(Pedidos!J:J;A' + row + ';Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"PAGO")'
       + '+COUNTIFS(Pedidos!J:J;A' + row + ';Pedidos!M:M;\'Configurações\'!B7;Pedidos!S:S;"CONFIRMADO")'
@@ -962,14 +964,48 @@ function semearCommerceCore_() {
 function migrarProdutosAtuaisParaVariantes_() {
   const sh = SpreadsheetApp.getActive().getSheetByName(CFG.SHEET_VARIANTES);
   if (!sh) return;
+
   const produtos = getProdutosAtivos_();
   const tamanhos = getTamanhosAtivos_();
-  const existing = sh.getLastRow() > 1
-    ? new Set(sh.getRange(2,3,sh.getLastRow()-1,1).getDisplayValues().flat().map(v => String(v||'').trim().toUpperCase()))
-    : new Set();
+  const tamanhosSet = new Set(tamanhos.map(t => String(t || '').toUpperCase()));
+  const produtoMap = {};
+  produtos.forEach(p => { produtoMap[String(p.codigo || '').toUpperCase()] = p; });
+
+  const existing = new Set();
+  if (sh.getLastRow() > 1) {
+    const count = sh.getLastRow() - 1;
+    const rows = sh.getRange(2, 1, count, 13).getValues();
+    let changed = false;
+
+    rows.forEach(r => {
+      const codigo = String(r[1] || '').trim().toUpperCase();
+      const p = produtoMap[codigo];
+      if (!p) return;
+
+      // Compatibilidade com nomenclatura antiga: XGG agora é EXG.
+      let tamanho = String(r[4] || '').trim().toUpperCase();
+      if (tamanho === 'XGG') {
+        tamanho = 'EXG';
+        r[0] = 'VAR-' + codigo + '-EXG';
+        r[2] = codigo + '-EXG';
+        r[3] = 'EXG';
+        r[4] = 'EXG';
+        changed = true;
+      }
+
+      r[7] = Number(p.preco || 0);
+      r[8] = Number(p.custo || 0);
+      r[10] = tamanhosSet.has(tamanho) ? 'SIM' : 'NÃO';
+      r[12] = new Date();
+      existing.add(String(r[2] || '').trim().toUpperCase());
+      changed = true;
+    });
+
+    if (changed) sh.getRange(2, 1, count, 13).setValues(rows);
+  }
 
   produtos.forEach(p => tamanhos.forEach(t => {
-    const sku = `${p.codigo}-${t}`.toUpperCase();
+    const sku = (p.codigo + '-' + t).toUpperCase();
     if (existing.has(sku)) return;
     const id = 'VAR-' + sku.replace(/[^A-Z0-9]+/g,'-');
     sh.appendRow([id,p.codigo,sku,t,t,'',p.nome,p.preco,p.custo,'NÃO','SIM',new Date(),new Date()]);
@@ -1724,12 +1760,22 @@ function getPublicData_() {
 }
 
 
+function getDrivePublicImageUrl_(fileId, width) {
+  const id = String(fileId || '').trim();
+  if (!id) return '';
+  const w = Math.max(64, Math.min(1600, Number(width || 512)));
+  return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + w;
+}
+
 function getLogosPublicas() {
   const cfg = getConfigMap_();
   const legacyLogoId = cfg['ID do arquivo da logo no Google Drive'] || '';
+  const gremioId = String(cfg['ID da logo do Grêmio'] || '').trim();
   return {
     escola: getLogoDataUri_(cfg['ID da logo da escola'] || legacyLogoId),
-    gremio: getLogoDataUri_(cfg['ID da logo do Grêmio']),
+    // A marca do GEI é pública no Drive. Usar URL de thumbnail evita transportar
+    // vários MB em Base64 pelo Apps Script e elimina o ponto de falha da logo.
+    gremio: gremioId ? getDrivePublicImageUrl_(gremioId, 512) : '',
     projeto: getLogoDataUri_(cfg['ID da logo do projeto'])
   };
 }
