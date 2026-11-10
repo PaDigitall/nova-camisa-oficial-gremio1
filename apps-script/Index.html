@@ -2082,7 +2082,7 @@
       renderLogos(previews);
 
       const signature = [ids.escolaId || '', ids.gremioId || '', ids.projetoId || ''].join('|');
-      const cacheKey = 'camisas_logos_v762_' + signature;
+      const cacheKey = 'camisas_logos_v764_' + signature;
 
       try{
         const cached = localStorage.getItem(cacheKey);
@@ -2166,6 +2166,7 @@
 
     function optimizeLogoForBrowser(src){
       if(!src) return Promise.resolve('');
+      if(/^https?:\/\//i.test(String(src))) return Promise.resolve(src);
       return new Promise(resolve => {
         const img = new Image();
         img.onload = () => {
