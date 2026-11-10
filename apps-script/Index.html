@@ -2073,16 +2073,23 @@
     function setupLogos(){
       const ids = BOOT.logos || {};
       const LEGACY_GREMIO_PREVIEW_ID = '1n0-4Kuy7x1iWD7ARb-mBch2fuyzXx4tR';
+      const publicBase = String(BOOT.baseUrl || '').replace(/\/+$/, '');
+      const geiVersion = String((BOOT.commerce && BOOT.commerce.versao) || '7.6.7');
+      const gremioProxy = (ids.gremioId && publicBase)
+        ? publicBase + '/api/drive-image?id=' + encodeURIComponent(ids.gremioId) + '&w=384&v=' + encodeURIComponent(geiVersion)
+        : '';
       const previews = {
         escola: PREVIEW_LOGOS.escola,
-        gremio: (!ids.gremioId || ids.gremioId === LEGACY_GREMIO_PREVIEW_ID) ? PREVIEW_LOGOS.gremio : '',
+        // A logo nova do GEI tenta carregar imediatamente pela Vercel.
+        // Não depende mais do RPC assíncrono do Apps Script para aparecer.
+        gremio: gremioProxy || ((!ids.gremioId || ids.gremioId === LEGACY_GREMIO_PREVIEW_ID) ? PREVIEW_LOGOS.gremio : ''),
         projeto: PREVIEW_LOGOS.projeto
       };
 
       renderLogos(previews);
 
       const signature = [ids.escolaId || '', ids.gremioId || '', ids.projetoId || ''].join('|');
-      const cacheKey = 'camisas_logos_v766_' + signature;
+      const cacheKey = 'camisas_logos_v767_' + signature;
 
       try{
         const cached = localStorage.getItem(cacheKey);
@@ -2102,7 +2109,7 @@
             try{
               const optimized = {
                 escola: (await optimizeLogoForBrowser(data && data.escola)) || previews.escola,
-                gremio: (await optimizeLogoForBrowser(data && data.gremio)) || previews.gremio,
+                gremio: (await optimizeLogoForBrowser(data && data.gremio)) || gremioProxy || previews.gremio,
                 projeto: (await optimizeLogoForBrowser(data && data.projeto)) || previews.projeto
               };
 
